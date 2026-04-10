@@ -130,10 +130,7 @@ where
 /// Generic hybrid GPU wrapper that reuses CPU block-hasher tracegen.
 pub struct Sha2BlockHasherChipGpu<C: Sha2Config> {
     records: Arc<Mutex<Option<Sha2SharedRecordsGpu>>>,
-    range_checker: Arc<VariableRangeCheckerChipGPU>,
     bitwise_lookup: Arc<BitwiseOperationLookupChipGPU<8>>,
-    pointer_max_bits: u32,
-    timestamp_max_bits: u32,
     _marker: PhantomData<C>,
 }
 
@@ -182,7 +179,8 @@ where
                     )
                     .unwrap();
 
-                    // Scratch for two-phase tracegen: state[8] + w_buf[BLOCK_WORDS] per row per block
+                    // Scratch for two-phase tracegen: state[8] + w_buf[BLOCK_WORDS] per row per
+                    // block
                     let scratch_words_per_block = C::ROWS_PER_BLOCK * (8 + C::BLOCK_WORDS);
                     let blocks_to_fill = trace_height / C::ROWS_PER_BLOCK;
                     let d_scratch = DeviceBuffer::<u32>::with_capacity(
@@ -197,11 +195,8 @@ where
                         &d_record_offsets,
                         num_blocks,
                         &d_prev_hashes,
-                        self.pointer_max_bits,
-                        &self.range_checker.count,
                         &self.bitwise_lookup.count,
                         8,
-                        self.timestamp_max_bits,
                         &d_scratch,
                     )
                     .unwrap();
@@ -246,11 +241,8 @@ where
                         &d_record_offsets,
                         num_blocks,
                         &d_prev_hashes,
-                        self.pointer_max_bits,
-                        &self.range_checker.count,
                         &self.bitwise_lookup.count,
                         8,
-                        self.timestamp_max_bits,
                         &d_scratch,
                     )
                     .unwrap();
@@ -279,17 +271,11 @@ where
 impl<C: Sha2Config> Sha2BlockHasherChipGpu<C> {
     pub fn new(
         records: Arc<Mutex<Option<Sha2SharedRecordsGpu>>>,
-        range_checker: Arc<VariableRangeCheckerChipGPU>,
         bitwise_lookup: Arc<BitwiseOperationLookupChipGPU<8>>,
-        pointer_max_bits: u32,
-        timestamp_max_bits: u32,
     ) -> Self {
         Self {
             records,
-            range_checker,
             bitwise_lookup,
-            pointer_max_bits,
-            timestamp_max_bits,
             _marker: PhantomData,
         }
     }

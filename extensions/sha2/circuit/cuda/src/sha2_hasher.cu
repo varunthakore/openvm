@@ -1012,12 +1012,8 @@ int launch_sha2_first_pass_tracegen(
     size_t *d_record_offsets,
     uint32_t total_num_blocks,
     typename V::Word *d_prev_hashes,
-    uint32_t ptr_max_bits,
-    uint32_t *d_range_checker,
-    uint32_t range_checker_num_bins,
     uint32_t *d_bitwise_lookup,
     uint32_t bitwise_num_bits,
-    uint32_t timestamp_max_bits,
     typename V::Word *d_scratch,
     size_t scratch_words
 ) {
@@ -1122,20 +1118,15 @@ int launch_sha256_first_pass_tracegen(
     size_t *d_record_offsets,
     uint32_t total_num_blocks,
     uint32_t *d_prev_hashes,
-    uint32_t ptr_max_bits,
-    uint32_t *d_range_checker,
-    uint32_t range_checker_num_bins,
     uint32_t *d_bitwise_lookup,
     uint32_t bitwise_num_bits,
-    uint32_t timestamp_max_bits,
     uint32_t *d_scratch,
     size_t scratch_words
 ) {
     return launch_sha2_first_pass_tracegen<Sha256Variant>(
         d_trace, trace_height, d_records, num_records, d_record_offsets,
-        total_num_blocks, d_prev_hashes, ptr_max_bits, d_range_checker,
-        range_checker_num_bins, d_bitwise_lookup, bitwise_num_bits,
-        timestamp_max_bits, d_scratch, scratch_words
+        total_num_blocks, d_prev_hashes, d_bitwise_lookup, bitwise_num_bits,
+        d_scratch, scratch_words
     );
 }
 
@@ -1147,20 +1138,15 @@ int launch_sha512_first_pass_tracegen(
     size_t *d_record_offsets,
     uint32_t total_num_blocks,
     uint64_t *d_prev_hashes,
-    uint32_t ptr_max_bits,
-    uint32_t *d_range_checker,
-    uint32_t range_checker_num_bins,
     uint32_t *d_bitwise_lookup,
     uint32_t bitwise_num_bits,
-    uint32_t timestamp_max_bits,
     uint64_t *d_scratch,
     size_t scratch_words
 ) {
     return launch_sha2_first_pass_tracegen<Sha512Variant>(
         d_trace, trace_height, d_records, num_records, d_record_offsets,
-        total_num_blocks, d_prev_hashes, ptr_max_bits, d_range_checker,
-        range_checker_num_bins, d_bitwise_lookup, bitwise_num_bits,
-        timestamp_max_bits, d_scratch, scratch_words
+        total_num_blocks, d_prev_hashes, d_bitwise_lookup, bitwise_num_bits,
+        d_scratch, scratch_words
     );
 }
 
