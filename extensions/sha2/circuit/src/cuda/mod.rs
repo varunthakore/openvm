@@ -182,6 +182,13 @@ where
                     )
                     .unwrap();
 
+                    // Scratch for two-phase tracegen: state[8] + w_buf[BLOCK_WORDS] per row per block
+                    let scratch_words_per_block = C::ROWS_PER_BLOCK * (8 + C::BLOCK_WORDS);
+                    let blocks_to_fill = trace_height / C::ROWS_PER_BLOCK;
+                    let d_scratch = DeviceBuffer::<u32>::with_capacity(
+                        blocks_to_fill * scratch_words_per_block,
+                    );
+
                     cuda_abi::sha256::sha256_first_pass_tracegen(
                         trace.buffer(),
                         trace_height,
@@ -195,6 +202,7 @@ where
                         &self.bitwise_lookup.count,
                         8,
                         self.timestamp_max_bits,
+                        &d_scratch,
                     )
                     .unwrap();
 
@@ -224,6 +232,12 @@ where
                     )
                     .unwrap();
 
+                    let scratch_words_per_block = C::ROWS_PER_BLOCK * (8 + C::BLOCK_WORDS);
+                    let blocks_to_fill = trace_height / C::ROWS_PER_BLOCK;
+                    let d_scratch = DeviceBuffer::<u64>::with_capacity(
+                        blocks_to_fill * scratch_words_per_block,
+                    );
+
                     cuda_abi::sha512::sha512_first_pass_tracegen(
                         trace.buffer(),
                         trace_height,
@@ -237,6 +251,7 @@ where
                         &self.bitwise_lookup.count,
                         8,
                         self.timestamp_max_bits,
+                        &d_scratch,
                     )
                     .unwrap();
 
