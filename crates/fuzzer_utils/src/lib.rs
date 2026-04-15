@@ -98,6 +98,22 @@ pub struct GlobalState {
     /// mutation. Tags every trace/fault log line so the fuzzer can correlate
     /// steps with static code locations.
     pub hint_pc: u32,
+
+    /// Counts how many fault injections actually fired during the current run.
+    /// Incremented by `print_injection_info()` (called once per fired hook).
+    ///
+    /// The orchestrator resets this to 0 before each run via
+    /// `reset_fault_count()`, and reads it after via `get_fault_count()`.
+    ///
+    /// Expected values after a single injection run:
+    ///   - `0`: target step never reached (program terminated early) or the
+    ///     requested `injection_kind` didn't match any hook at that step
+    ///   - `1`: injection fired as intended (the normal case)
+    ///   - `>1`: impossible by design — `step` is strictly monotonic so
+    ///     `is_injection_at_step` can match at most once per run. If this is
+    ///     ever observed, it indicates a bug (e.g., two hook sites for the
+    ///     same kind in the same cycle).
+    pub fault_count: u64,
 }
 
 impl GlobalState {
@@ -114,6 +130,7 @@ impl GlobalState {
             hint_instruction: String::new(),
             hint_assembly: String::new(),
             hint_pc: 0,
+            fault_count: 0,
         }
     }
 }
@@ -207,6 +224,24 @@ pub fn inc_step() {
 
 pub fn get_step() -> u64 {
     GLOBAL_STATE.lock().unwrap().step
+}
+
+/// Reset the fault counter to 0. Call this before each run so the next
+/// `get_fault_count()` reports only faults from the upcoming execution.
+///
+/// The counter itself is incremented inside `print_injection_info` (not
+/// via a separate function) to avoid double-locking the global mutex.
+pub fn reset_fault_count() {
+    let mut state = GLOBAL_STATE.lock().unwrap();
+    state.fault_count = 0;
+}
+
+/// Read the number of fault injections that fired during the current run.
+/// The orchestrator (e.g. arguzz-plus) uses this to verify that injection
+/// actually happened (expected value: 1 for a successful injection run,
+/// 0 if the target step was never reached).
+pub fn get_fault_count() -> u64 {
+    GLOBAL_STATE.lock().unwrap().fault_count
 }
 
 pub fn get_injection_step() -> u64 {
@@ -364,11 +399,29 @@ macro_rules! fuzzer_assert_ne {
 // LOGGING
 /////////
 
+/// Report that a fault injection has fired.
+///
+/// Always increments `GlobalState::fault_count` so orchestrators can detect
+/// whether injection actually occurred. Additionally emits a `<fault>...</fault>`
+/// JSON line to stdout if `trace_logging` is enabled.
+///
+/// Called once per successful injection hook (after the mutation is applied).
+/// Because `is_injection_at_step` can only match once per run (by design —
+/// `step` is strictly monotonic), this function is called at most once per
+/// run under normal operation.
 pub fn print_injection_info(
     inject_kind: &str,
     info: &String,
 ) {
-    let state = GLOBAL_STATE.lock().unwrap();
+    let mut state = GLOBAL_STATE.lock().unwrap();
+
+    // Always count the fault — the orchestrator uses this to verify
+    // injection actually happened (expected: exactly 1 per run).
+    state.fault_count += 1;
+
+    // Optionally emit a <fault>...</fault> tag for stdout-based parsing
+    // (used by the original ARGUZZ Python fuzzer; arguzz-plus uses
+    // `get_fault_count()` instead).
     if state.trace_logging {
         println!(
             "<fault>{{\
