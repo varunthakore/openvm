@@ -199,7 +199,7 @@ impl<AB: InteractionBuilder> Air<AB> for Rv32HintStoreAir {
 
         // Preventing rem_words overflow: rem_words < 2^MAX_HINT_BUFFER_WORDS_BITS
         // These constraints only work for MAX_HINT_BUFFER_WORDS_BITS in [16, 23]
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             (8..16).contains(&MAX_HINT_BUFFER_WORDS_BITS),
             "MAX_HINT_BUFFER_WORDS_BITS must be in [16, 23] for these constraints to work"
         );
@@ -405,8 +405,8 @@ where
 
         let a = a.as_canonical_u32();
         let b = b.as_canonical_u32();
-        debug_assert_eq!(d.as_canonical_u32(), RV32_REGISTER_AS);
-        debug_assert_eq!(e.as_canonical_u32(), RV32_MEMORY_AS);
+        fuzzer_utils::fuzzer_assert_eq!(d.as_canonical_u32(), RV32_REGISTER_AS);
+        fuzzer_utils::fuzzer_assert_eq!(e.as_canonical_u32(), RV32_MEMORY_AS);
 
         let local_opcode = Rv32HintStoreOpcode::from_usize(opcode.local_opcode_idx(self.offset));
 
@@ -441,9 +441,9 @@ where
             &mut record.inner.mem_ptr_aux_record.prev_timestamp,
         ));
 
-        debug_assert!(record.inner.mem_ptr <= (1 << self.pointer_max_bits));
-        debug_assert_ne!(num_words, 0);
-        debug_assert!(num_words <= (1 << self.pointer_max_bits));
+        fuzzer_utils::fuzzer_assert!(record.inner.mem_ptr <= (1 << self.pointer_max_bits));
+        fuzzer_utils::fuzzer_assert_ne!(num_words, 0);
+        fuzzer_utils::fuzzer_assert!(num_words <= (1 << self.pointer_max_bits));
 
         record.inner.num_words = num_words;
         if local_opcode == HINT_STOREW {
@@ -503,7 +503,7 @@ impl<F: PrimeField32> TraceFiller<F> for Rv32HintStoreFiller {
         }
 
         let width = trace.width;
-        debug_assert_eq!(width, size_of::<Rv32HintStoreCols<u8>>());
+        fuzzer_utils::fuzzer_assert_eq!(width, size_of::<Rv32HintStoreCols<u8>>());
         let mut trace = &mut trace.values[..width * rows_used];
         let mut sizes = Vec::with_capacity(rows_used);
         let mut chunks = Vec::with_capacity(rows_used);
@@ -552,7 +552,7 @@ impl<F: PrimeField32> TraceFiller<F> for Rv32HintStoreFiller {
                 // (num_words overflow check is handled below with the stricter
                 // MAX_HINT_BUFFER_WORDS_BITS bound)
                 // Range check for num_words (using MAX_HINT_BUFFER_WORDS_BITS)
-                debug_assert!(
+                fuzzer_utils::fuzzer_assert!(
                     num_words <= MAX_HINT_BUFFER_WORDS as u32,
                     "num_words must be <= MAX_HINT_BUFFER_WORDS"
                 );

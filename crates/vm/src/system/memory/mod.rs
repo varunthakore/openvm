@@ -106,7 +106,7 @@ impl<SC: StarkProtocolConfig> MemoryAirInventory<SC> {
         } else {
             // Volatile memory
             let addr_space_height = mem_config.addr_space_height;
-            assert!(addr_space_height < Val::<SC>::bits() - 2);
+            fuzzer_utils::fuzzer_assert!(addr_space_height < Val::<SC>::bits() - 2);
             let addr_space_max_bits =
                 log2_ceil_usize((ADDR_SPACE_OFFSET + 2u32.pow(addr_space_height as u32)) as usize);
             let boundary = VolatileBoundaryAir::new(
@@ -120,7 +120,7 @@ impl<SC: StarkProtocolConfig> MemoryAirInventory<SC> {
         // Memory access adapters
         let lt_air = IsLtSubAir::new(range_bus, mem_config.timestamp_max_bits);
         let maan = mem_config.max_access_adapter_n;
-        assert!(matches!(maan, 2 | 4 | 8 | 16 | 32));
+        fuzzer_utils::fuzzer_assert!(matches!(maan, 2 | 4 | 8 | 16 | 32));
         let access_adapters: Vec<AirRef<SC>> = [
             Arc::new(AccessAdapterAir::<2> { memory_bus, lt_air }) as AirRef<SC>,
             Arc::new(AccessAdapterAir::<4> { memory_bus, lt_air }) as AirRef<SC>,

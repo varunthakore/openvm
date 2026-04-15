@@ -33,7 +33,7 @@ impl<A, const LIMB_BITS: usize> MultiplicationExecutor<A, { RV32_REGISTER_NUM_LI
         inst: &Instruction<F>,
         data: &mut MultiPreCompute,
     ) -> Result<(), StaticProgramError> {
-        assert_eq!(
+        fuzzer_utils::fuzzer_assert_eq!(
             MulOpcode::from_usize(inst.opcode.local_opcode_idx(self.offset)),
             MulOpcode::MUL
         );

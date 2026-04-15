@@ -13,7 +13,7 @@ use crate::{
 };
 
 pub fn vm_poseidon2_hasher<F: PrimeField32>() -> Poseidon2Hasher<F> {
-    assert_eq!(F::ORDER_U32, BabyBear::ORDER_U32, "F must be BabyBear");
+    fuzzer_utils::fuzzer_assert_eq!(F::ORDER_U32, BabyBear::ORDER_U32, "F must be BabyBear");
     let config = vm_poseidon2_config::<BabyBear>();
     let (external_constants, internal_constants) =
         config.constants.to_external_internal_constants();

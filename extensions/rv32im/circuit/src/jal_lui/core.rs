@@ -247,7 +247,7 @@ pub(super) fn get_signed_imm<F: PrimeField32>(is_jal: bool, imm: F) -> i32 {
             imm_f as i32
         } else {
             let neg_imm_f = F::ORDER_U32 - imm_f;
-            debug_assert!(neg_imm_f < (1 << (RV_J_TYPE_IMM_BITS - 1)));
+            fuzzer_utils::fuzzer_assert!(neg_imm_f < (1 << (RV_J_TYPE_IMM_BITS - 1)));
             -(neg_imm_f as i32)
         }
     } else {
@@ -261,7 +261,7 @@ pub(super) fn run_jal_lui(is_jal: bool, pc: u32, imm: i32) -> (u32, [u8; RV32_RE
     if is_jal {
         let rd_data = (pc + DEFAULT_PC_STEP).to_le_bytes();
         let next_pc = pc as i32 + imm;
-        debug_assert!(next_pc >= 0);
+        fuzzer_utils::fuzzer_assert!(next_pc >= 0);
         (next_pc as u32, rd_data)
     } else {
         let imm = imm as u32;

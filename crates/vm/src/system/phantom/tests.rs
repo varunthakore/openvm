@@ -30,8 +30,8 @@ fn run_phantom_test<E, RA>(
     for _ in 0..num_nops {
         tester.execute_with_pc(executor, arena, &nop, state.pc.as_canonical_u32());
         let new_state = tester.execution_final_state();
-        assert_eq!(state.pc + F::from_usize(4), new_state.pc);
-        assert_eq!(state.timestamp + F::ONE, new_state.timestamp);
+        fuzzer_utils::fuzzer_assert_eq!(state.pc + F::from_usize(4), new_state.pc);
+        fuzzer_utils::fuzzer_assert_eq!(state.timestamp + F::ONE, new_state.timestamp);
         state = new_state;
     }
 }

@@ -56,7 +56,7 @@ impl SystemChipInventoryGPU {
 
         let memory_inventory = match &mem_inventory.interface {
             MemoryInterfaceAirs::Persistent { .. } => {
-                assert!(config.continuation_enabled);
+                fuzzer_utils::fuzzer_assert!(config.continuation_enabled);
                 MemoryInventoryGPU::persistent(
                     config.memory_config.clone(),
                     range_checker.clone(),
@@ -64,7 +64,7 @@ impl SystemChipInventoryGPU {
                 )
             }
             MemoryInterfaceAirs::Volatile { .. } => {
-                assert!(!config.continuation_enabled);
+                fuzzer_utils::fuzzer_assert!(!config.continuation_enabled);
                 MemoryInventoryGPU::volatile(config.memory_config.clone(), range_checker.clone())
             }
         };

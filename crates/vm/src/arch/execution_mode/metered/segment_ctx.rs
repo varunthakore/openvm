@@ -87,7 +87,7 @@ impl Default for SegmentationLimits {
 
 impl SegmentationLimits {
     pub fn new(max_trace_height: u32, max_memory: usize, max_interactions: usize) -> Self {
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             max_trace_height.is_power_of_two(),
             "max_trace_height should be a power of two"
         );
@@ -99,7 +99,7 @@ impl SegmentationLimits {
     }
 
     pub fn with_max_trace_height(mut self, max_trace_height: u32) -> Self {
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             max_trace_height.is_power_of_two(),
             "max_trace_height should be a power of two"
         );
@@ -108,7 +108,7 @@ impl SegmentationLimits {
     }
 
     pub fn set_max_trace_height(&mut self, max_trace_height: u32) {
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             max_trace_height.is_power_of_two(),
             "max_trace_height should be a power of two"
         );
@@ -139,8 +139,8 @@ impl SegmentationCtx {
         interactions: Vec<usize>,
         config: SegmentationConfig,
     ) -> Self {
-        assert_eq!(air_names.len(), widths.len());
-        assert_eq!(air_names.len(), interactions.len());
+        fuzzer_utils::fuzzer_assert_eq!(air_names.len(), widths.len());
+        fuzzer_utils::fuzzer_assert_eq!(air_names.len(), interactions.len());
 
         let num_airs = air_names.len();
         Self {
@@ -209,7 +209,7 @@ impl SegmentationCtx {
         usize, /* main */
         usize, /* interaction */
     ) {
-        debug_assert_eq!(trace_heights.len(), self.widths.len());
+        fuzzer_utils::fuzzer_assert_eq!(trace_heights.len(), self.widths.len());
 
         let main_weight = self.config.main_cell_weight;
         let main_secondary_weight = self.config.main_cell_secondary_weight;
@@ -248,7 +248,7 @@ impl SegmentationCtx {
     /// we assume chips don't send/receive with nonzero multiplicity on padding rows.
     #[inline(always)]
     fn calculate_total_interactions(&self, trace_heights: &[u32]) -> usize {
-        debug_assert_eq!(trace_heights.len(), self.interactions.len());
+        fuzzer_utils::fuzzer_assert_eq!(trace_heights.len(), self.interactions.len());
 
         trace_heights
             .iter()
@@ -264,10 +264,10 @@ impl SegmentationCtx {
         trace_heights: &[u32],
         is_trace_height_constant: &[bool],
     ) -> bool {
-        debug_assert_eq!(trace_heights.len(), is_trace_height_constant.len());
-        debug_assert_eq!(trace_heights.len(), self.air_names.len());
-        debug_assert_eq!(trace_heights.len(), self.widths.len());
-        debug_assert_eq!(trace_heights.len(), self.interactions.len());
+        fuzzer_utils::fuzzer_assert_eq!(trace_heights.len(), is_trace_height_constant.len());
+        fuzzer_utils::fuzzer_assert_eq!(trace_heights.len(), self.air_names.len());
+        fuzzer_utils::fuzzer_assert_eq!(trace_heights.len(), self.widths.len());
+        fuzzer_utils::fuzzer_assert_eq!(trace_heights.len(), self.interactions.len());
 
         let instret_start = self
             .segments
@@ -458,7 +458,7 @@ impl SegmentationCtx {
         num_insns: u64,
         trace_heights: Vec<u32>,
     ) {
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             num_insns > 0,
             "Segment should contain at least one instruction"
         );

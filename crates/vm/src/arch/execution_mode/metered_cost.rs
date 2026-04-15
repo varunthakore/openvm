@@ -36,7 +36,7 @@ impl AccessAdapterCtx {
         size_bits: u32,
         widths: &[usize],
     ) {
-        debug_assert!((address_space as usize) < self.min_block_size_bits.len());
+        fuzzer_utils::fuzzer_assert!((address_space as usize) < self.min_block_size_bits.len());
 
         // SAFETY: address_space passed is usually a hardcoded constant or derived from an
         // Instruction where it is bounds checked before passing
@@ -45,14 +45,14 @@ impl AccessAdapterCtx {
                 .min_block_size_bits
                 .get_unchecked(address_space as usize)
         };
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             align_bits as u32 <= size_bits,
             "align_bits ({align_bits}) must be <= size_bits ({size_bits})"
         );
 
         for adapter_bits in (align_bits as u32 + 1..=size_bits).rev() {
             let adapter_idx = self.idx_offset + adapter_bits as usize - 1;
-            debug_assert!(adapter_idx < widths.len());
+            fuzzer_utils::fuzzer_assert!(adapter_idx < widths.len());
             // SAFETY: widths is initialized taking access adapters into account
             let width = unsafe { *widths.get_unchecked(adapter_idx) };
             let height_delta = 1 << (size_bits - adapter_bits + 1);
@@ -98,12 +98,12 @@ impl MeteredCostCtx {
 impl ExecutionCtxTrait for MeteredCostCtx {
     #[inline(always)]
     fn on_memory_operation(&mut self, address_space: u32, _ptr: u32, size: u32) {
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             address_space != RV32_IMM_AS,
             "address space must not be immediate"
         );
-        debug_assert!(size > 0, "size must be greater than 0, got {size}");
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(size > 0, "size must be greater than 0, got {size}");
+        fuzzer_utils::fuzzer_assert!(
             size.is_power_of_two(),
             "size must be a power of 2, got {size}"
         );
@@ -137,7 +137,7 @@ impl ExecutionCtxTrait for MeteredCostCtx {
 impl MeteredExecutionCtxTrait for MeteredCostCtx {
     #[inline(always)]
     fn on_height_change(&mut self, chip_idx: usize, height_delta: u32) {
-        debug_assert!(chip_idx < self.widths.len(), "chip_idx out of bounds");
+        fuzzer_utils::fuzzer_assert!(chip_idx < self.widths.len(), "chip_idx out of bounds");
         // SAFETY: chip_idx is created in executor_idx_to_air_idx and is always within bounds
         let width = unsafe { *self.widths.get_unchecked(chip_idx) };
         self.cost += (height_delta as u64) * (width as u64);

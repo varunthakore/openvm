@@ -203,7 +203,7 @@ where
         //   instruction getting pre_compute_max_size bytes
         // - self.pre_compute_buf.ptr is non-null
         // - initialization of the contents of the slice is the responsibility of each Executor
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             (pc_idx + 1) * self.pre_compute_max_size <= self.pre_compute_buf.layout.size()
         );
         unsafe {

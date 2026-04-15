@@ -37,8 +37,8 @@ fn test_vm_connector_happy_path() {
     let exit_code = 1789;
     test_impl(true, exit_code, |air_ctx| {
         let pvs: &VmConnectorPvs<F> = air_ctx.public_values.as_slice().borrow();
-        assert_eq!(pvs.is_terminate, F::ONE);
-        assert_eq!(pvs.exit_code, F::from_u32(exit_code));
+        fuzzer_utils::fuzzer_assert_eq!(pvs.is_terminate, F::ONE);
+        fuzzer_utils::fuzzer_assert_eq!(pvs.exit_code, F::from_u32(exit_code));
     });
 }
 
@@ -106,7 +106,7 @@ fn test_impl(should_pass: bool, exit_code: u32, f: impl FnOnce(&mut AirProvingCo
         vm.engine.verify(&vk, &proof).expect("Verification failed");
     } else {
         let result = vm.engine.verify(&vk, &proof);
-        assert!(matches!(
+        fuzzer_utils::fuzzer_assert!(matches!(
             result,
             Err(VerifierError::BatchConstraintError(_))
         ));

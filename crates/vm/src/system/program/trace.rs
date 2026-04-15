@@ -122,7 +122,7 @@ impl<SC: StarkProtocolConfig> Chip<(), CpuBackend<SC>> for ProgramChip<SC> {
             .cached
             .clone()
             .expect("cached program trace must be loaded");
-        assert!(self.filtered_exec_frequencies.len() <= cached.height());
+        fuzzer_utils::fuzzer_assert!(self.filtered_exec_frequencies.len() <= cached.height());
         let mut freqs = Val::<SC>::zero_vec(cached.height());
         freqs
             .par_iter_mut()

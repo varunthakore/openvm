@@ -599,7 +599,7 @@ where
         <VB::VmConfig as VmExecutionConfig<Val<E::SC>>>::Executor:
             PreflightExecutor<Val<E::SC>, VB::RecordArena>,
     {
-        debug_assert!(interpreter
+        fuzzer_utils::fuzzer_assert!(interpreter
             .executor_idx_to_air_idx
             .iter()
             .all(|&air_idx| air_idx < trace_heights.len()));
@@ -620,7 +620,7 @@ where
         let adapter_offset = system_config.access_adapter_air_id_offset();
         // ATTENTION: this must agree with `num_memory_airs`
         let num_adapters = log2_strict_usize(system_config.memory_config.max_access_adapter_n);
-        assert_eq!(adapter_offset + num_adapters, system_config.num_airs());
+        fuzzer_utils::fuzzer_assert_eq!(adapter_offset + num_adapters, system_config.num_airs());
         let access_adapter_arena_size_bound = records::arena_size_bound(
             &trace_heights[adapter_offset..adapter_offset + num_adapters],
         );
@@ -843,7 +843,7 @@ where
         if self.config().as_ref().continuation_enabled {
             verify_segments(&self.engine, vk, proofs).map(|_| ())
         } else {
-            assert_eq!(proofs.len(), 1);
+            fuzzer_utils::fuzzer_assert_eq!(proofs.len(), 1);
             self.engine
                 .verify(vk, &proofs[0])
                 .map_err(VmVerificationError::StarkError)
@@ -915,7 +915,7 @@ where
     pub fn executor_idx_to_air_idx(&self) -> Vec<usize> {
         let ret = self.chip_complex.inventory.executor_idx_to_air_idx();
         tracing::debug!("executor_idx_to_air_idx: {:?}", ret);
-        assert_eq!(self.executor().inventory.executors().len(), ret.len());
+        fuzzer_utils::fuzzer_assert_eq!(self.executor().inventory.executors().len(), ret.len());
         ret
     }
 
@@ -973,7 +973,7 @@ where
 
     pub fn num_airs(&self) -> usize {
         let num_airs = self.pk.per_air.len();
-        debug_assert_eq!(num_airs, self.chip_complex.inventory.airs().num_airs());
+        fuzzer_utils::fuzzer_assert_eq!(num_airs, self.chip_complex.inventory.airs().num_airs());
         num_airs
     }
 
@@ -1004,10 +1004,10 @@ mod tests {
 
         let (_vm, pk) = VirtualMachine::new_with_keygen(engine, SystemCpuBuilder, config).unwrap();
 
-        assert!(pk.per_air[PROGRAM_AIR_ID].vk.is_required);
-        assert!(pk.per_air[CONNECTOR_AIR_ID].vk.is_required);
-        assert!(pk.per_air[merkle_air_id].vk.is_required);
-        assert!(pk.per_air[boundary_air_id].vk.is_required);
+        fuzzer_utils::fuzzer_assert!(pk.per_air[PROGRAM_AIR_ID].vk.is_required);
+        fuzzer_utils::fuzzer_assert!(pk.per_air[CONNECTOR_AIR_ID].vk.is_required);
+        fuzzer_utils::fuzzer_assert!(pk.per_air[merkle_air_id].vk.is_required);
+        fuzzer_utils::fuzzer_assert!(pk.per_air[boundary_air_id].vk.is_required);
     }
 }
 
@@ -1312,7 +1312,7 @@ where
                     });
                 }
                 // We assume the vk is valid, so this is only a debug assert.
-                debug_assert_eq!(air_vk.params.num_public_values, 0);
+                fuzzer_utils::fuzzer_assert_eq!(air_vk.params.num_public_values, 0);
             }
         }
         if !program_air_present {
@@ -1373,7 +1373,7 @@ where
     /// Sets fixed trace heights for the system AIRs' trace matrices.
     pub fn override_system_trace_heights(&mut self, heights: &[u32]) {
         let num_sys_airs = self.config().as_ref().num_airs();
-        assert!(heights.len() >= num_sys_airs);
+        fuzzer_utils::fuzzer_assert!(heights.len() >= num_sys_airs);
         self.chip_complex
             .system
             .override_trace_heights(&heights[..num_sys_airs]);
@@ -1428,7 +1428,7 @@ mod vm_metrics {
             record_arenas: &[VB::RecordArena],
         ) -> Vec<usize> {
             let num_airs = self.num_airs();
-            assert_eq!(num_airs, record_arenas.len());
+            fuzzer_utils::fuzzer_assert_eq!(num_airs, record_arenas.len());
             let mut heights: Vec<usize> = record_arenas
                 .iter()
                 .map(|arena| arena.current_trace_height())

@@ -14,12 +14,12 @@ pub use test_utils::*;
 
 #[inline(always)]
 pub fn transmute_field_to_u32<F: PrimeField32>(field: &F) -> u32 {
-    debug_assert_eq!(
+    fuzzer_utils::fuzzer_assert_eq!(
         std::mem::size_of::<F>(),
         std::mem::size_of::<u32>(),
         "Field type F must have the same size as u32"
     );
-    debug_assert_eq!(
+    fuzzer_utils::fuzzer_assert_eq!(
         std::mem::align_of::<F>(),
         std::mem::align_of::<u32>(),
         "Field type F must have the same alignment as u32"
@@ -32,12 +32,12 @@ pub fn transmute_field_to_u32<F: PrimeField32>(field: &F) -> u32 {
 
 #[inline(always)]
 pub fn transmute_u32_to_field<F: PrimeField32>(value: &u32) -> F {
-    debug_assert_eq!(
+    fuzzer_utils::fuzzer_assert_eq!(
         std::mem::size_of::<F>(),
         std::mem::size_of::<u32>(),
         "Field type F must have the same size as u32"
     );
-    debug_assert_eq!(
+    fuzzer_utils::fuzzer_assert_eq!(
         std::mem::align_of::<F>(),
         std::mem::align_of::<u32>(),
         "Field type F must have the same alignment as u32"

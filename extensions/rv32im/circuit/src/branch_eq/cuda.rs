@@ -29,7 +29,7 @@ impl Chip<DenseRecordArena, GpuBackend> for Rv32BranchEqualChipGpu {
         if records.is_empty() {
             return AirProvingContext::simple_no_pis(DeviceMatrix::dummy());
         }
-        debug_assert_eq!(records.len() % RECORD_SIZE, 0);
+        fuzzer_utils::fuzzer_assert_eq!(records.len() % RECORD_SIZE, 0);
 
         let trace_width = BranchEqualCoreCols::<F, RV32_REGISTER_NUM_LIMBS>::width()
             + Rv32BranchAdapterCols::<F>::width();

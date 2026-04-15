@@ -524,10 +524,10 @@ mod conversions {
                 >,
             >,
         ) -> Self {
-            assert_eq!(BASIC_NUM_READS, NUM_READS * BLOCKS_PER_READ);
+            fuzzer_utils::fuzzer_assert_eq!(BASIC_NUM_READS, NUM_READS * BLOCKS_PER_READ);
             let mut reads_it = ctx.reads.into_iter();
             let reads = from_fn(|_| from_fn(|_| reads_it.next().unwrap()));
-            assert_eq!(BASIC_NUM_WRITES, BLOCKS_PER_WRITE);
+            fuzzer_utils::fuzzer_assert_eq!(BASIC_NUM_WRITES, BLOCKS_PER_WRITE);
             let mut writes_it = ctx.writes.into_iter();
             let writes = from_fn(|_| writes_it.next().unwrap());
             AdapterAirContext {
@@ -566,8 +566,8 @@ mod conversions {
                 BasicAdapterInterface<T, PI, NUM_READS, NUM_WRITES, READ_SIZE, WRITE_SIZE>,
             >,
         ) -> AdapterAirContext<T, FlatInterface<T, PI, READ_CELLS, WRITE_CELLS>> {
-            assert_eq!(READ_CELLS, NUM_READS * READ_SIZE);
-            assert_eq!(WRITE_CELLS, NUM_WRITES * WRITE_SIZE);
+            fuzzer_utils::fuzzer_assert_eq!(READ_CELLS, NUM_READS * READ_SIZE);
+            fuzzer_utils::fuzzer_assert_eq!(WRITE_CELLS, NUM_WRITES * WRITE_SIZE);
             let mut reads_it = ctx.reads.into_iter().flatten();
             let reads = from_fn(|_| reads_it.next().unwrap());
             let mut writes_it = ctx.writes.into_iter().flatten();
@@ -611,8 +611,8 @@ mod conversions {
             T,
             BasicAdapterInterface<T, PI, NUM_READS, NUM_WRITES, READ_SIZE, WRITE_SIZE>,
         > {
-            assert_eq!(READ_CELLS, NUM_READS * READ_SIZE);
-            assert_eq!(WRITE_CELLS, NUM_WRITES * WRITE_SIZE);
+            fuzzer_utils::fuzzer_assert_eq!(READ_CELLS, NUM_READS * READ_SIZE);
+            fuzzer_utils::fuzzer_assert_eq!(WRITE_CELLS, NUM_WRITES * WRITE_SIZE);
             let mut reads_it = reads.into_iter();
             let reads: [[T; READ_SIZE]; NUM_READS] =
                 from_fn(|_| from_fn(|_| reads_it.next().unwrap()));
@@ -648,7 +648,7 @@ mod conversions {
 
     impl<T, const N: usize, const M: usize> From<DynArray<T>> for [[T; N]; M] {
         fn from(v: DynArray<T>) -> Self {
-            assert_eq!(v.0.len(), N * M, "Incorrect vector length {}", v.0.len());
+            fuzzer_utils::fuzzer_assert_eq!(v.0.len(), N * M, "Incorrect vector length {}", v.0.len());
             let mut it = v.0.into_iter();
             from_fn(|_| from_fn(|_| it.next().unwrap()))
         }
@@ -666,7 +666,7 @@ mod conversions {
 
     impl<T, const N: usize, const M: usize, const R: usize> From<DynArray<T>> for [[[T; N]; M]; R] {
         fn from(v: DynArray<T>) -> Self {
-            assert_eq!(
+            fuzzer_utils::fuzzer_assert_eq!(
                 v.0.len(),
                 N * M * R,
                 "Incorrect vector length {}",
@@ -694,7 +694,7 @@ mod conversions {
         for ([[T; N]; M1], [[T; N]; M2])
     {
         fn from(v: DynArray<T>) -> Self {
-            assert_eq!(
+            fuzzer_utils::fuzzer_assert_eq!(
                 v.0.len(),
                 N * (M1 + M2),
                 "Incorrect vector length {}",

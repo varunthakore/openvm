@@ -81,14 +81,14 @@ impl VolatileBoundaryAir {
             *limb_bits = min(bits_remaining, range_max_bits);
             bits_remaining -= *limb_bits;
         }
-        assert_eq!(bits_remaining, 0, "addr_space_max_bits={addr_space_max_bits} with {NUM_AS_LIMBS} limbs exceeds range_max_bits={range_max_bits}");
+        fuzzer_utils::fuzzer_assert_eq!(bits_remaining, 0, "addr_space_max_bits={addr_space_max_bits} with {NUM_AS_LIMBS} limbs exceeds range_max_bits={range_max_bits}");
         let mut pointer_limb_bits = [0; AUX_LEN];
         let mut bits_remaining = pointer_max_bits;
         for limb_bits in &mut pointer_limb_bits {
             *limb_bits = min(bits_remaining, range_max_bits);
             bits_remaining -= *limb_bits;
         }
-        assert_eq!(bits_remaining, 0, "pointer_max_bits={pointer_max_bits} with {AUX_LEN} limbs exceeds range_max_bits={range_max_bits}");
+        fuzzer_utils::fuzzer_assert_eq!(bits_remaining, 0, "pointer_max_bits={pointer_max_bits} with {AUX_LEN} limbs exceeds range_max_bits={range_max_bits}");
         Self {
             memory_bus,
             addr_lt_air,
@@ -239,7 +239,7 @@ where
             .clone()
             .expect("Trace generation should be called after finalize");
         let trace_height = if let Some(height) = self.overridden_height {
-            assert!(
+            fuzzer_utils::fuzzer_assert!(
                 height >= final_memory.len(),
                 "Overridden height is less than the required height"
             );
@@ -288,7 +288,7 @@ where
                         ),
                         ((&mut row.addr_lt_aux).into(), &mut out),
                     );
-                    debug_assert_eq!(out, Val::<SC>::ONE, "Addresses are not sorted");
+                    fuzzer_utils::fuzzer_assert_eq!(out, Val::<SC>::ONE, "Addresses are not sorted");
                 }
             });
         // Always do a dummy range check on the last row due to wraparound

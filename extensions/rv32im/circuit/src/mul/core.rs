@@ -141,12 +141,12 @@ impl<A, const NUM_LIMBS: usize, const LIMB_BITS: usize>
         // The RangeTupleChecker is used to range check (a[i], carry[i]) pairs where 0 <= i
         // < NUM_LIMBS. a[i] must have LIMB_BITS bits and carry[i] is the sum of i + 1 bytes
         // (with LIMB_BITS bits).
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             range_tuple_chip.sizes()[0] == 1 << LIMB_BITS,
             "First element of RangeTupleChecker must have size {}",
             1 << LIMB_BITS
         );
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             range_tuple_chip.sizes()[1] >= (1 << LIMB_BITS) * NUM_LIMBS as u32,
             "Second element of RangeTupleChecker must have size of at least {}",
             (1 << LIMB_BITS) * NUM_LIMBS as u32
@@ -190,7 +190,7 @@ where
     ) -> Result<(), ExecutionError> {
         let Instruction { opcode, .. } = instruction;
 
-        debug_assert_eq!(
+        fuzzer_utils::fuzzer_assert_eq!(
             MulOpcode::from_usize(opcode.local_opcode_idx(self.offset)),
             MulOpcode::MUL
         );

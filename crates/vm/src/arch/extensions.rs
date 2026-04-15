@@ -553,7 +553,7 @@ where
     /// This should only be called after the `ChipInventory` is fully built.
     pub fn executor_idx_to_air_idx(&self) -> Vec<usize> {
         let num_airs = self.airs.num_airs();
-        assert_eq!(
+        fuzzer_utils::fuzzer_assert_eq!(
             num_airs,
             self.config().num_airs() + self.chips.len(),
             "Number of chips does not match number of AIRs"
@@ -809,19 +809,19 @@ mod tests {
     #[test]
     fn test_any_enum_downcast() {
         let a = EnumA::A(1);
-        assert_eq!(a.as_any_kind().downcast_ref::<u8>(), Some(&1));
+        fuzzer_utils::fuzzer_assert_eq!(a.as_any_kind().downcast_ref::<u8>(), Some(&1));
         let b = EnumB::D(a);
-        assert!(b.as_any_kind().downcast_ref::<u64>().is_none());
-        assert!(b.as_any_kind().downcast_ref::<EnumA>().is_none());
-        assert_eq!(b.as_any_kind().downcast_ref::<u8>(), Some(&1));
+        fuzzer_utils::fuzzer_assert!(b.as_any_kind().downcast_ref::<u64>().is_none());
+        fuzzer_utils::fuzzer_assert!(b.as_any_kind().downcast_ref::<EnumA>().is_none());
+        fuzzer_utils::fuzzer_assert_eq!(b.as_any_kind().downcast_ref::<u8>(), Some(&1));
         let c = EnumB::C(3);
-        assert_eq!(c.as_any_kind().downcast_ref::<u64>(), Some(&3));
+        fuzzer_utils::fuzzer_assert_eq!(c.as_any_kind().downcast_ref::<u64>(), Some(&3));
         let d = EnumC::D(a);
-        assert!(d.as_any_kind().downcast_ref::<u64>().is_none());
-        assert!(d.as_any_kind().downcast_ref::<EnumA>().is_none());
-        assert_eq!(d.as_any_kind().downcast_ref::<u8>(), Some(&1));
+        fuzzer_utils::fuzzer_assert!(d.as_any_kind().downcast_ref::<u64>().is_none());
+        fuzzer_utils::fuzzer_assert!(d.as_any_kind().downcast_ref::<EnumA>().is_none());
+        fuzzer_utils::fuzzer_assert_eq!(d.as_any_kind().downcast_ref::<u8>(), Some(&1));
         let e = EnumC::C(3);
-        assert_eq!(e.as_any_kind().downcast_ref::<u64>(), Some(&3));
+        fuzzer_utils::fuzzer_assert_eq!(e.as_any_kind().downcast_ref::<u64>(), Some(&3));
     }
 
     #[test]
@@ -830,14 +830,14 @@ mod tests {
         let inventory: AirInventory<BabyBearPoseidon2Config> = config.create_airs().unwrap();
         let system = inventory.system();
         let port = system.port();
-        assert_eq!(port.execution_bus.index(), 0);
-        assert_eq!(port.memory_bridge.memory_bus().index(), 1);
-        assert_eq!(port.program_bus.index(), 2);
-        assert_eq!(port.memory_bridge.range_bus().index(), 3);
+        fuzzer_utils::fuzzer_assert_eq!(port.execution_bus.index(), 0);
+        fuzzer_utils::fuzzer_assert_eq!(port.memory_bridge.memory_bus().index(), 1);
+        fuzzer_utils::fuzzer_assert_eq!(port.program_bus.index(), 2);
+        fuzzer_utils::fuzzer_assert_eq!(port.memory_bridge.range_bus().index(), 3);
         match &system.memory.interface {
             MemoryInterfaceAirs::Persistent { boundary, .. } => {
-                assert_eq!(boundary.merkle_bus.index, 4);
-                assert_eq!(boundary.compression_bus.index, 5);
+                fuzzer_utils::fuzzer_assert_eq!(boundary.merkle_bus.index, 4);
+                fuzzer_utils::fuzzer_assert_eq!(boundary.compression_bus.index, 5);
             }
             _ => unreachable!(),
         };

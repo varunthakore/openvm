@@ -133,7 +133,7 @@ fn generate_x86_asm_impl<F: PrimeField32>(
     asm_str += &format!("   add {gpr_reg}, {imm_extended}\n");
 
     let gpr_reg_w64 = convert_x86_reg(&gpr_reg, Width::W64).ok_or(AotError::InvalidInstruction)?;
-    assert_eq!(gpr_reg_w64, REG_B);
+    fuzzer_utils::fuzzer_assert_eq!(gpr_reg_w64, REG_B);
     if e_u32 != RV32_REGISTER_AS {
         asm_str += &format!("   mov {REG_A}, {REG_B}\n");
         // Although ptr is 32 bit, we still need to pass 64-bit `REG_B` to the function.

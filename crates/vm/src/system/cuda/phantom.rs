@@ -20,7 +20,7 @@ impl PhantomChipGPU {
     pub fn trace_height(arena: &DenseRecordArena) -> usize {
         let record_size = size_of::<PhantomRecord>();
         let records_len = arena.allocated().len();
-        assert_eq!(records_len % record_size, 0);
+        fuzzer_utils::fuzzer_assert_eq!(records_len % record_size, 0);
         records_len / record_size
     }
 

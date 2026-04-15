@@ -358,7 +358,7 @@ where
             ..
         } = instruction;
 
-        debug_assert_eq!(d.as_canonical_u32(), RV32_REGISTER_AS);
+        fuzzer_utils::fuzzer_assert_eq!(d.as_canonical_u32(), RV32_REGISTER_AS);
 
         let local_opcode = Rv32LoadStoreOpcode::from_usize(
             opcode.local_opcode_idx(Rv32LoadStoreOpcode::CLASS_OFFSET),
@@ -380,7 +380,7 @@ where
         let shift_amount = ptr_val & 3;
         let ptr_val = ptr_val - shift_amount;
 
-        assert!(
+        fuzzer_utils::fuzzer_assert!(
             ptr_val < (1 << self.pointer_max_bits),
             "ptr_val: {ptr_val} = rs1_val: {} + imm_extended: {imm_extended} >= 2 ** {}",
             record.rs1_val,
@@ -391,7 +391,7 @@ where
         // those cells
         let (read_data, prev_data) = match local_opcode {
             LOADW | LOADB | LOADH | LOADBU | LOADHU => {
-                debug_assert_eq!(e, F::from_u32(RV32_MEMORY_AS));
+                fuzzer_utils::fuzzer_assert_eq!(e, F::from_u32(RV32_MEMORY_AS));
                 record.mem_as = RV32_MEMORY_AS as u8;
                 let read_data = tracing_read(
                     memory,
@@ -405,9 +405,9 @@ where
             }
             STOREW | STOREH | STOREB => {
                 let e = e.as_canonical_u32();
-                debug_assert_ne!(e, RV32_IMM_AS);
-                debug_assert_ne!(e, RV32_REGISTER_AS);
-                debug_assert_ne!(e, DEFERRAL_AS);
+                fuzzer_utils::fuzzer_assert_ne!(e, RV32_IMM_AS);
+                fuzzer_utils::fuzzer_assert_ne!(e, RV32_REGISTER_AS);
+                fuzzer_utils::fuzzer_assert_ne!(e, DEFERRAL_AS);
                 record.mem_as = e as u8;
                 let read_data = tracing_read(
                     memory,
@@ -440,10 +440,10 @@ where
             ..
         } = instruction;
 
-        debug_assert_eq!(d.as_canonical_u32(), RV32_REGISTER_AS);
-        debug_assert_ne!(e.as_canonical_u32(), RV32_IMM_AS);
-        debug_assert_ne!(e.as_canonical_u32(), RV32_REGISTER_AS);
-        debug_assert_ne!(e.as_canonical_u32(), DEFERRAL_AS);
+        fuzzer_utils::fuzzer_assert_eq!(d.as_canonical_u32(), RV32_REGISTER_AS);
+        fuzzer_utils::fuzzer_assert_ne!(e.as_canonical_u32(), RV32_IMM_AS);
+        fuzzer_utils::fuzzer_assert_ne!(e.as_canonical_u32(), RV32_REGISTER_AS);
+        fuzzer_utils::fuzzer_assert_ne!(e.as_canonical_u32(), DEFERRAL_AS);
 
         let local_opcode = Rv32LoadStoreOpcode::from_usize(
             opcode.local_opcode_idx(Rv32LoadStoreOpcode::CLASS_OFFSET),
@@ -480,7 +480,7 @@ impl<F: PrimeField32> AdapterTraceFiller<F> for Rv32LoadStoreAdapterFiller {
 
     #[inline(always)]
     fn fill_trace_row(&self, mem_helper: &MemoryAuxColsFactory<F>, mut adapter_row: &mut [F]) {
-        debug_assert!(self.range_checker_chip.range_max_bits() >= 15);
+        fuzzer_utils::fuzzer_assert!(self.range_checker_chip.range_max_bits() >= 15);
 
         // SAFETY:
         // - caller ensures `adapter_row` contains a valid record representation that was previously

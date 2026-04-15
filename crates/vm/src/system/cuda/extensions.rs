@@ -96,7 +96,7 @@ impl VmBuilder<BabyBearPoseidon2GpuEngine> for SystemGpuBuilder {
             let max_buffer_size = (config.segmentation_config.limits.max_trace_height as usize)
                 .next_power_of_two() * 2 // seems like a reliable estimate
                 * (DIGEST_WIDTH * 2); // size of one record
-            assert_eq!(inventory.chips().len(), POSEIDON2_INSERTION_IDX);
+            fuzzer_utils::fuzzer_assert_eq!(inventory.chips().len(), POSEIDON2_INSERTION_IDX);
             let sbox_registers = if config.max_constraint_degree >= 7 {
                 0
             } else {

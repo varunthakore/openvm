@@ -159,17 +159,17 @@ fn compute_merkle_proof_to_user_public_values_root<const CHUNK: usize, F: Field>
     hasher: &(impl Hasher<CHUNK, F> + Sync),
     top_tree: &[[F; CHUNK]],
 ) -> Vec<[F; CHUNK]> {
-    assert_eq!(
+    fuzzer_utils::fuzzer_assert_eq!(
         num_public_values % CHUNK,
         0,
         "num_public_values must be a multiple of memory chunk {CHUNK}"
     );
     let address_height = memory_dimensions.address_height;
     let addr_space_height = memory_dimensions.addr_space_height;
-    assert_eq!(top_tree.len(), (2 << addr_space_height) - 1);
+    fuzzer_utils::fuzzer_assert_eq!(top_tree.len(), (2 << addr_space_height) - 1);
     let num_pv_chunks: usize = num_public_values / CHUNK;
     // This enforces the number of public values cannot be 0.
-    assert!(
+    fuzzer_utils::fuzzer_assert!(
         num_pv_chunks.is_power_of_two(),
         "pv_height must be a power of two"
     );
@@ -206,7 +206,7 @@ fn compute_merkle_proof_to_user_public_values_root<const CHUNK: usize, F: Field>
 
 pub fn extract_public_values(num_public_values: usize, final_memory: &MemoryImage) -> Vec<u8> {
     let mut public_values: Vec<u8> = {
-        assert_eq!(
+        fuzzer_utils::fuzzer_assert_eq!(
             final_memory.config[PUBLIC_VALUES_AS as usize].layout,
             MemoryCellType::U8
         );
@@ -215,7 +215,7 @@ pub fn extract_public_values(num_public_values: usize, final_memory: &MemoryImag
             .to_vec()
     };
 
-    assert!(
+    fuzzer_utils::fuzzer_assert!(
         public_values.len() >= num_public_values,
         "Public values address space has {} elements, but configuration has num_public_values={}",
         public_values.len(),
@@ -270,7 +270,7 @@ mod tests {
             &memory.memory,
             &top_tree,
         );
-        assert_eq!(pv_proof.public_values, expected_pvs);
+        fuzzer_utils::fuzzer_assert_eq!(pv_proof.public_values, expected_pvs);
         let final_memory_root =
             MerkleTree::from_memory(&memory.memory, &memory_dimensions, &hasher).root();
         pv_proof

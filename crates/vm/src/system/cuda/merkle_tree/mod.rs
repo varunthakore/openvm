@@ -57,7 +57,7 @@ impl MemoryMerkleSubTree {
     /// `max_size` is the number of leaf digest nodes in the full balanced tree dictated by
     /// `addr_space_height` from the `MemoryConfig`.
     pub fn new(addr_space_size: usize, max_size: usize) -> Self {
-        assert!(
+        fuzzer_utils::fuzzer_assert!(
             max_size.is_power_of_two(),
             "Max address space size must be a power of two"
         );
@@ -160,7 +160,7 @@ impl MemoryMerkleSubTree {
     /// depth: 0 = root, 1 = root's children, ..., height-1 = leaves
     pub fn layer_bounds(&self, depth: usize) -> (usize, usize) {
         let global_height = self.height + self.path_len;
-        assert!(
+        fuzzer_utils::fuzzer_assert!(
             depth < global_height,
             "Depth {depth} out of bounds for height {global_height}",
         );
@@ -209,22 +209,22 @@ impl MemoryMerkleTree {
             .addr_spaces
             .iter()
             .map(|ashc| {
-                assert!(
+                fuzzer_utils::fuzzer_assert!(
                     ashc.num_cells % DIGEST_WIDTH == 0,
                     "the number of cells must be divisible by `DIGEST_WIDTH`"
                 );
                 ashc.num_cells / DIGEST_WIDTH
             })
             .collect::<Vec<_>>();
-        assert!(!(addr_space_sizes.is_empty()), "Invalid config");
+        fuzzer_utils::fuzzer_assert!(!(addr_space_sizes.is_empty()), "Invalid config");
 
         let num_addr_spaces = addr_space_sizes.len() - ADDR_SPACE_OFFSET as usize;
-        assert!(
+        fuzzer_utils::fuzzer_assert!(
             num_addr_spaces.is_power_of_two(),
             "Number of address spaces must be a one plus power of two"
         );
         for &sz in addr_space_sizes.iter().take(ADDR_SPACE_OFFSET as usize) {
-            assert!(
+            fuzzer_utils::fuzzer_assert!(
                 sz == 0,
                 "The first `ADDR_SPACE_OFFSET` address spaces are assumed to be empty"
             );
@@ -541,7 +541,7 @@ mod tests {
             &cpu_hasher_chip,
         );
 
-        assert_eq!(
+        fuzzer_utils::fuzzer_assert_eq!(
             cpu_merkle_tree.root(),
             gpu_merkle_tree.top_roots.to_host().unwrap()[0]
         );
@@ -569,7 +569,7 @@ mod tests {
             .iter()
             .map(|_| std::array::from_fn(|_| F::from_u32(rng.random_range(0..F::ORDER_U32))))
             .collect::<Vec<[F; DIGEST_WIDTH]>>();
-        assert!(!touched_ptrs.is_empty());
+        fuzzer_utils::fuzzer_assert!(!touched_ptrs.is_empty());
         cpu_merkle_tree.finalize(
             &cpu_hasher_chip,
             &(touched_ptrs
@@ -600,7 +600,7 @@ mod tests {
             false,
         );
 
-        assert_eq!(
+        fuzzer_utils::fuzzer_assert_eq!(
             cpu_merkle_tree.root(),
             gpu_merkle_tree.top_roots.to_host().unwrap()[0]
         );

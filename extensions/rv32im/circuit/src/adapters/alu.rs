@@ -212,8 +212,8 @@ impl<F: PrimeField32, const LIMB_BITS: usize> AdapterTraceExecutor<F>
     ) -> Self::ReadData {
         let &Instruction { b, c, d, e, .. } = instruction;
 
-        debug_assert_eq!(d.as_canonical_u32(), RV32_REGISTER_AS);
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert_eq!(d.as_canonical_u32(), RV32_REGISTER_AS);
+        fuzzer_utils::fuzzer_assert!(
             e.as_canonical_u32() == RV32_REGISTER_AS || e.as_canonical_u32() == RV32_IMM_AS
         );
 
@@ -254,7 +254,7 @@ impl<F: PrimeField32, const LIMB_BITS: usize> AdapterTraceExecutor<F>
     ) {
         let &Instruction { a, d, .. } = instruction;
 
-        debug_assert_eq!(d.as_canonical_u32(), RV32_REGISTER_AS);
+        fuzzer_utils::fuzzer_assert_eq!(d.as_canonical_u32(), RV32_REGISTER_AS);
 
         record.rd_ptr = a.as_canonical_u32();
         tracing_write(

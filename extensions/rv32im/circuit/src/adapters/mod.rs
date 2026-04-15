@@ -55,7 +55,7 @@ pub fn decompose<F: PrimeField32>(value: u32) -> [F; RV32_REGISTER_NUM_LIMBS] {
 
 #[inline(always)]
 pub fn imm_to_bytes(imm: u32) -> [u8; RV32_REGISTER_NUM_LIMBS] {
-    debug_assert_eq!(imm >> 24, 0);
+    fuzzer_utils::fuzzer_assert_eq!(imm >> 24, 0);
     let mut imm_le = imm.to_le_bytes();
     imm_le[3] = imm_le[2];
     imm_le
@@ -63,7 +63,7 @@ pub fn imm_to_bytes(imm: u32) -> [u8; RV32_REGISTER_NUM_LIMBS] {
 
 #[inline(always)]
 pub fn memory_read<const N: usize>(memory: &GuestMemory, address_space: u32, ptr: u32) -> [u8; N] {
-    debug_assert!(
+    fuzzer_utils::fuzzer_assert!(
         address_space == RV32_REGISTER_AS
             || address_space == RV32_MEMORY_AS
             || address_space == PUBLIC_VALUES_AS,
@@ -82,7 +82,7 @@ pub fn memory_write<const N: usize>(
     ptr: u32,
     data: [u8; N],
 ) {
-    debug_assert!(
+    fuzzer_utils::fuzzer_assert!(
         address_space == RV32_REGISTER_AS
             || address_space == RV32_MEMORY_AS
             || address_space == PUBLIC_VALUES_AS
@@ -103,7 +103,7 @@ pub fn timed_read<const N: usize>(
     address_space: u32,
     ptr: u32,
 ) -> (u32, [u8; N]) {
-    debug_assert!(
+    fuzzer_utils::fuzzer_assert!(
         address_space == RV32_REGISTER_AS
             || address_space == RV32_MEMORY_AS
             || address_space == PUBLIC_VALUES_AS
@@ -131,7 +131,7 @@ pub fn timed_write<const N: usize>(
     ptr: u32,
     data: [u8; N],
 ) -> (u32, [u8; N]) {
-    debug_assert!(
+    fuzzer_utils::fuzzer_assert!(
         address_space == RV32_REGISTER_AS
             || address_space == RV32_MEMORY_AS
             || address_space == PUBLIC_VALUES_AS
@@ -173,7 +173,7 @@ pub fn tracing_read_imm(
     imm_mut: &mut u32,
 ) -> [u8; RV32_REGISTER_NUM_LIMBS] {
     *imm_mut = imm;
-    debug_assert_eq!(imm >> 24, 0); // highest byte should be zero to prevent overflow
+    fuzzer_utils::fuzzer_assert_eq!(imm >> 24, 0); // highest byte should be zero to prevent overflow
 
     memory.increment_timestamp();
 

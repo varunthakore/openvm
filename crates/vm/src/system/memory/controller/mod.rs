@@ -132,12 +132,12 @@ impl<F: VmField> MemoryController<F> {
         range_checker: SharedVariableRangeCheckerChip,
     ) -> Self {
         let range_checker_bus = range_checker.bus();
-        assert!(mem_config.pointer_max_bits <= F::bits() - 2);
-        assert!(mem_config
+        fuzzer_utils::fuzzer_assert!(mem_config.pointer_max_bits <= F::bits() - 2);
+        fuzzer_utils::fuzzer_assert!(mem_config
             .addr_spaces
             .iter()
             .all(|&space| space.num_cells <= (1 << mem_config.pointer_max_bits)));
-        assert!(mem_config.addr_space_height < F::bits() - 2);
+        fuzzer_utils::fuzzer_assert!(mem_config.addr_space_height < F::bits() - 2);
         let addr_space_max_bits = log2_ceil_usize(
             (ADDR_SPACE_OFFSET + 2u32.pow(mem_config.addr_space_height as u32)) as usize,
         );
@@ -309,9 +309,9 @@ impl<F: VmField> MemoryController<F> {
                 boundary_chip,
                 ..
             } => {
-                debug_assert_eq!(ret.len(), BOUNDARY_AIR_OFFSET);
+                fuzzer_utils::fuzzer_assert_eq!(ret.len(), BOUNDARY_AIR_OFFSET);
                 ret.push(boundary_chip.generate_proving_ctx(()));
-                debug_assert_eq!(ret.len(), MERKLE_AIR_OFFSET);
+                fuzzer_utils::fuzzer_assert_eq!(ret.len(), MERKLE_AIR_OFFSET);
                 ret.push(merkle_chip.generate_proving_ctx());
             }
         }
@@ -378,7 +378,7 @@ impl<F: PrimeField32> MemoryAuxColsFactory<'_, F> {
         timestamp: u32,
         buffer: &mut LessThanAuxCols<F, AUX_LEN>,
     ) {
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             prev_timestamp < timestamp,
             "prev_timestamp {prev_timestamp} >= timestamp {timestamp}"
         );

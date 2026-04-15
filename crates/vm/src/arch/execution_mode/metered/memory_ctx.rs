@@ -24,7 +24,7 @@ impl BitSet {
         let bit_index = index & 63;
         let mask = 1u64 << bit_index;
 
-        debug_assert!(word_index < self.words.len(), "BitSet index out of bounds");
+        fuzzer_utils::fuzzer_assert!(word_index < self.words.len(), "BitSet index out of bounds");
 
         // SAFETY: word_index is derived from a memory address that is bounds-checked
         //         during memory access. The bitset is sized to accommodate all valid
@@ -39,8 +39,8 @@ impl BitSet {
     /// Assumes start < end and end <= self.words.len() * 64.
     #[inline(always)]
     pub fn insert_range(&mut self, start: usize, end: usize) -> usize {
-        debug_assert!(start < end);
-        debug_assert!(end <= self.words.len() * 64, "BitSet range out of bounds");
+        fuzzer_utils::fuzzer_assert!(start < end);
+        fuzzer_utils::fuzzer_assert!(end <= self.words.len() * 64, "BitSet range out of bounds");
 
         let mut ret = 0;
         let start_word_index = start >> 6;
@@ -172,7 +172,7 @@ impl<const PAGE_BITS: usize> MemoryCtx<PAGE_BITS> {
         ptr: u32,
         size: u32,
     ) {
-        debug_assert!((address_space as usize) < self.addr_space_access_count.len());
+        fuzzer_utils::fuzzer_assert!((address_space as usize) < self.addr_space_access_count.len());
 
         let num_blocks = (size + self.chunk - 1) >> self.chunk_bits;
         let start_chunk_id = ptr >> self.chunk_bits;
@@ -186,7 +186,7 @@ impl<const PAGE_BITS: usize> MemoryCtx<PAGE_BITS> {
         let end_block_id = start_block_id + num_blocks;
         let start_page_id = start_block_id >> PAGE_BITS;
         let end_page_id = ((end_block_id - 1) >> PAGE_BITS) + 1;
-        assert!(
+        fuzzer_utils::fuzzer_assert!(
             self.page_indices_since_checkpoint_len + (end_page_id - start_page_id) as usize
                 <= self.page_indices_since_checkpoint.len(),
             "more than {MAX_MEM_PAGE_OPS_PER_INSN} memory pages accessed in a single instruction"
@@ -195,7 +195,7 @@ impl<const PAGE_BITS: usize> MemoryCtx<PAGE_BITS> {
         for page_id in start_page_id..end_page_id {
             // Append page_id to page_indices_since_checkpoint
             let len = self.page_indices_since_checkpoint_len;
-            debug_assert!(len < self.page_indices_since_checkpoint.len());
+            fuzzer_utils::fuzzer_assert!(len < self.page_indices_since_checkpoint.len());
             // SAFETY: len is within bounds, and we extend length by 1 after writing.
             unsafe {
                 *self.page_indices_since_checkpoint.as_mut_ptr().add(len) = page_id;
@@ -232,7 +232,7 @@ impl<const PAGE_BITS: usize> MemoryCtx<PAGE_BITS> {
         size_bits: u32,
         num: u32,
     ) {
-        debug_assert!((address_space as usize) < self.min_block_size_bits.len());
+        fuzzer_utils::fuzzer_assert!((address_space as usize) < self.min_block_size_bits.len());
 
         // SAFETY: address_space passed is usually a hardcoded constant or derived from an
         // Instruction where it is bounds checked before passing
@@ -241,14 +241,14 @@ impl<const PAGE_BITS: usize> MemoryCtx<PAGE_BITS> {
                 .min_block_size_bits
                 .get_unchecked(address_space as usize)
         };
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             align_bits as u32 <= size_bits,
             "align_bits ({align_bits}) must be <= size_bits ({size_bits})"
         );
 
         for adapter_bits in (align_bits as u32 + 1..=size_bits).rev() {
             let adapter_idx = self.adapter_offset + adapter_bits as usize - 1;
-            debug_assert!(adapter_idx < trace_heights.len());
+            fuzzer_utils::fuzzer_assert!(adapter_idx < trace_heights.len());
             // SAFETY: trace_heights is initialized taking access adapters into account
             unsafe {
                 *trace_heights.get_unchecked_mut(adapter_idx) +=
@@ -292,7 +292,7 @@ impl<const PAGE_BITS: usize> MemoryCtx<PAGE_BITS> {
                     .memory_dimensions
                     .index_to_label((page_id as u64) << PAGE_BITS);
                 let addr_space_idx = addr_space as usize;
-                debug_assert!(addr_space_idx < addr_space_access_count.len());
+                fuzzer_utils::fuzzer_assert!(addr_space_idx < addr_space_access_count.len());
                 // SAFETY: addr_space_idx is bounds checked in debug and derived from a valid page
                 // id.
                 unsafe {
@@ -326,8 +326,8 @@ impl<const PAGE_BITS: usize> MemoryCtx<PAGE_BITS> {
         }
 
         if let Some(merkle_tree_idx) = self.merkle_tree_index {
-            debug_assert!(merkle_tree_idx < trace_heights.len());
-            debug_assert!(trace_heights.len() >= 2);
+            fuzzer_utils::fuzzer_assert!(merkle_tree_idx < trace_heights.len());
+            fuzzer_utils::fuzzer_assert!(trace_heights.len() >= 2);
 
             let poseidon2_idx = trace_heights.len() - 2;
             // SAFETY: poseidon2_idx is trace_heights.len() - 2, guaranteed to be in bounds
@@ -385,22 +385,22 @@ mod tests {
         // 513 bits
         let mut bit_set = BitSet::new(8 * 64 + 1);
         let num_flips = bit_set.insert_range(2, 29);
-        assert_eq!(num_flips, 27);
+        fuzzer_utils::fuzzer_assert_eq!(num_flips, 27);
         let num_flips = bit_set.insert_range(1, 31);
-        assert_eq!(num_flips, 3);
+        fuzzer_utils::fuzzer_assert_eq!(num_flips, 3);
 
         let num_flips = bit_set.insert_range(32, 65);
-        assert_eq!(num_flips, 33);
+        fuzzer_utils::fuzzer_assert_eq!(num_flips, 33);
         let num_flips = bit_set.insert_range(0, 66);
-        assert_eq!(num_flips, 3);
+        fuzzer_utils::fuzzer_assert_eq!(num_flips, 3);
         let num_flips = bit_set.insert_range(0, 66);
-        assert_eq!(num_flips, 0);
+        fuzzer_utils::fuzzer_assert_eq!(num_flips, 0);
 
         let num_flips = bit_set.insert_range(256, 320);
-        assert_eq!(num_flips, 64);
+        fuzzer_utils::fuzzer_assert_eq!(num_flips, 64);
         let num_flips = bit_set.insert_range(256, 377);
-        assert_eq!(num_flips, 57);
+        fuzzer_utils::fuzzer_assert_eq!(num_flips, 57);
         let num_flips = bit_set.insert_range(100, 513);
-        assert_eq!(num_flips, 413 - 121);
+        fuzzer_utils::fuzzer_assert_eq!(num_flips, 413 - 121);
     }
 }

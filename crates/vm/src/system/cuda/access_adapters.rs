@@ -40,7 +40,7 @@ impl AccessAdapterInventoryGPU {
         let timestamp_max_bits = self.timestamp_max_bits;
         let range_checker = &self.range_checker;
 
-        assert!(max_access_adapter_n.is_power_of_two());
+        fuzzer_utils::fuzzer_assert!(max_access_adapter_n.is_power_of_two());
         let cnt_adapters = max_access_adapter_n.ilog2() as usize;
         if records.is_empty() {
             return vec![Some(DeviceMatrix::<F>::dummy()); cnt_adapters];
@@ -262,7 +262,7 @@ mod tests {
             .collect::<Vec<_>>();
 
         for (cpu_trace, gpu_trace) in cpu_traces.into_iter().zip(gpu_traces.iter()) {
-            assert_eq!(
+            fuzzer_utils::fuzzer_assert_eq!(
                 cpu_trace.height() == 0,
                 gpu_trace.height() == 0,
                 "Exactly one of CPU and GPU traces is empty"

@@ -127,7 +127,7 @@ where
         }
         if is_jal {
             let next_pc = pc as i32 + signed_imm;
-            debug_assert!(next_pc >= 0);
+            fuzzer_utils::fuzzer_assert!(next_pc >= 0);
             asm_str += &format!("   jmp asm_execute_pc_{next_pc}\n");
         };
 
@@ -224,7 +224,7 @@ unsafe fn execute_e12_impl<
     let rd = if IS_JAL {
         let rd_data = (pc + DEFAULT_PC_STEP).to_le_bytes();
         let next_pc = pc as i32 + signed_imm;
-        debug_assert!(next_pc >= 0);
+        fuzzer_utils::fuzzer_assert!(next_pc >= 0);
         pc = next_pc as u32;
         rd_data
     } else {

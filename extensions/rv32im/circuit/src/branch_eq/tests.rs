@@ -132,7 +132,7 @@ fn set_and_execute<RA: Arena, E: PreflightExecutor<F, RA>>(
     let to_pc = tester.last_to_pc().as_canonical_u32() as i32;
     let pc_inc = if cmp_result { imm } else { 4 };
 
-    assert_eq!(to_pc, from_pc + pc_inc);
+    fuzzer_utils::fuzzer_assert_eq!(to_pc, from_pc + pc_inc);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -343,12 +343,12 @@ fn execute_roundtrip_sanity_test() {
 fn run_eq_sanity_test() {
     let x: [u8; RV32_REGISTER_NUM_LIMBS] = [19, 4, 17, 60];
     let (cmp_result, _, diff_val) = run_eq::<F, RV32_REGISTER_NUM_LIMBS>(true, &x, &x);
-    assert!(cmp_result);
-    assert_eq!(diff_val, F::ZERO);
+    fuzzer_utils::fuzzer_assert!(cmp_result);
+    fuzzer_utils::fuzzer_assert_eq!(diff_val, F::ZERO);
 
     let (cmp_result, _, diff_val) = run_eq::<F, RV32_REGISTER_NUM_LIMBS>(false, &x, &x);
-    assert!(!cmp_result);
-    assert_eq!(diff_val, F::ZERO);
+    fuzzer_utils::fuzzer_assert!(!cmp_result);
+    fuzzer_utils::fuzzer_assert_eq!(diff_val, F::ZERO);
 }
 
 #[test]
@@ -356,15 +356,15 @@ fn run_ne_sanity_test() {
     let x: [u8; RV32_REGISTER_NUM_LIMBS] = [19, 4, 17, 60];
     let y: [u8; RV32_REGISTER_NUM_LIMBS] = [19, 32, 18, 60];
     let (cmp_result, diff_idx, diff_val) = run_eq::<F, RV32_REGISTER_NUM_LIMBS>(true, &x, &y);
-    assert!(!cmp_result);
-    assert_eq!(
+    fuzzer_utils::fuzzer_assert!(!cmp_result);
+    fuzzer_utils::fuzzer_assert_eq!(
         diff_val * (F::from_u8(x[diff_idx]) - F::from_u8(y[diff_idx])),
         F::ONE
     );
 
     let (cmp_result, diff_idx, diff_val) = run_eq::<F, RV32_REGISTER_NUM_LIMBS>(false, &x, &y);
-    assert!(cmp_result);
-    assert_eq!(
+    fuzzer_utils::fuzzer_assert!(cmp_result);
+    fuzzer_utils::fuzzer_assert_eq!(
         diff_val * (F::from_u8(x[diff_idx]) - F::from_u8(y[diff_idx])),
         F::ONE
     );

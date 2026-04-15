@@ -306,7 +306,7 @@ mod testing {
             width: usize,
             d_records: &DeviceBuffer<u8>,
         ) -> Result<(), CudaError> {
-            assert!(height.is_power_of_two());
+            fuzzer_utils::fuzzer_assert!(height.is_power_of_two());
             CudaError::from_result(_execution_testing_tracegen(
                 d_trace.as_mut_ptr(),
                 height,
@@ -338,9 +338,9 @@ mod testing {
             num_records: usize,
             block_size: usize,
         ) -> Result<(), CudaError> {
-            assert!(height.is_power_of_two());
-            assert!(height >= num_records);
-            assert!(block_size.is_power_of_two());
+            fuzzer_utils::fuzzer_assert!(height.is_power_of_two());
+            fuzzer_utils::fuzzer_assert!(height >= num_records);
+            fuzzer_utils::fuzzer_assert!(block_size.is_power_of_two());
             CudaError::from_result(_memory_testing_tracegen(
                 d_trace.as_mut_ptr(),
                 height,
@@ -372,8 +372,8 @@ mod testing {
             d_records: &DeviceBuffer<u8>,
             num_records: usize,
         ) -> Result<(), CudaError> {
-            assert!(height.is_power_of_two());
-            assert!(height >= num_records);
+            fuzzer_utils::fuzzer_assert!(height.is_power_of_two());
+            fuzzer_utils::fuzzer_assert!(height >= num_records);
             CudaError::from_result(_program_testing_tracegen(
                 d_trace.as_mut_ptr(),
                 height,

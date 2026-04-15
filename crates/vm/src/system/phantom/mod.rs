@@ -128,7 +128,7 @@ where
         let [a, b, c] = [instruction.a, instruction.b, instruction.c].map(|x| x.as_canonical_u32());
         record.operands = [a, b, c];
 
-        debug_assert_eq!(instruction.opcode, self.phantom_opcode);
+        fuzzer_utils::fuzzer_assert_eq!(instruction.opcode, self.phantom_opcode);
         let discriminant = PhantomDiscriminant(c as u16);
         if let Some(sys) = SysPhantom::from_repr(discriminant.0) {
             tracing::trace!("pc: {pc:#x} | system phantom: {sys:?}");

@@ -529,7 +529,7 @@ where
     // where
     //     E: StarkEngine<SC = SC, PB = CpuBackend<SC>, PD = CpuDevice<SC>>,
     // {
-    //     assert!(self.memory.is_none(), "Memory must be finalized");
+    //     fuzzer_utils::fuzzer_assert!(self.memory.is_none(), "Memory must be finalized");
     //     let (airs, ctxs): (Vec<_>, Vec<_>) = self.air_ctxs.into_iter().unzip();
     //     engine_provider().run_test_impl(airs, ctxs)
     // }
@@ -541,7 +541,7 @@ pub type TestStarkError =
 
 impl VmChipTester<BabyBearPoseidon2Config> {
     pub fn simple_test(self) -> Result<VerificationData<BabyBearPoseidon2Config>, TestStarkError> {
-        assert!(self.memory.is_none(), "Memory must be finalized");
+        fuzzer_utils::fuzzer_assert!(self.memory.is_none(), "Memory must be finalized");
         let (airs, ctxs): (Vec<_>, Vec<_>) = self.air_ctxs.into_iter().unzip();
         test_cpu_engine().run_test(airs, ctxs)
     }
@@ -550,7 +550,7 @@ impl VmChipTester<BabyBearPoseidon2Config> {
         self,
         params: SystemParams,
     ) -> Result<VerificationData<BabyBearPoseidon2Config>, TestStarkError> {
-        assert!(self.memory.is_none(), "Memory must be finalized");
+        fuzzer_utils::fuzzer_assert!(self.memory.is_none(), "Memory must be finalized");
         let (airs, ctxs): (Vec<_>, Vec<_>) = self.air_ctxs.into_iter().unzip();
         let engine: baby_bear_poseidon2::BabyBearPoseidon2CpuEngine =
             baby_bear_poseidon2::BabyBearPoseidon2CpuEngine::new(params);

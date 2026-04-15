@@ -19,6 +19,7 @@ openvm-instructions = { workspace = true }
 openvm-rv32im-transpiler = { workspace = true, optional = true }
 
 openvm-stark-backend = { workspace = true }
+fuzzer_utils = { workspace = true }
 openvm-stark-sdk = { workspace = true, optional = true, features = ["cpu-backend"] }
 openvm-cpu-backend = { workspace = true }
 openvm-cuda-common = { workspace = true, optional = true }

@@ -161,7 +161,7 @@ impl Default for AddressMap {
 
 impl<M: LinearMemory> AddressMap<M> {
     pub fn new(config: Vec<AddressSpaceHostConfig>) -> Self {
-        assert_eq!(config[0].num_cells, 0, "Address space 0 must have 0 cells");
+        fuzzer_utils::fuzzer_assert_eq!(config[0].num_cells, 0, "Address space 0 must have 0 cells");
         let mem = config
             .iter()
             .map(|config| M::new(config.num_cells.checked_mul(config.layout.size()).unwrap()))
@@ -203,7 +203,7 @@ impl<M: LinearMemory> AddressMap<M> {
     /// - `T` **must** be the correct type for a single memory cell for `addr_space`
     /// - Assumes `addr_space` is within the configured memory and not out of bounds
     pub unsafe fn get<T: Copy>(&self, (addr_space, ptr): Address) -> T {
-        debug_assert_eq!(
+        fuzzer_utils::fuzzer_assert_eq!(
             size_of::<T>(),
             self.config[addr_space as usize].layout.size()
         );
@@ -224,7 +224,7 @@ impl<M: LinearMemory> AddressMap<M> {
         (addr_space, ptr): Address,
         len: usize,
     ) -> &[T] {
-        debug_assert_eq!(
+        fuzzer_utils::fuzzer_assert_eq!(
             size_of::<T>(),
             self.config[addr_space as usize].layout.size()
         );
@@ -376,7 +376,7 @@ impl GuestMemory {
 
     #[inline(always)]
     fn debug_assert_cell_type<T>(&self, addr_space: u32) {
-        debug_assert_eq!(
+        fuzzer_utils::fuzzer_assert_eq!(
             size_of::<T>(),
             self.memory.config[addr_space as usize].layout.size()
         );
@@ -397,8 +397,8 @@ impl AccessMetadata {
     const LOG_BLOCK_SIZE_SHIFT: u32 = 29;
 
     pub fn new(timestamp: u32, block_size: u8, offset_to_start: u8) -> Self {
-        debug_assert!(timestamp < (1 << 29), "Timestamp must be less than 2^29");
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(timestamp < (1 << 29), "Timestamp must be less than 2^29");
+        fuzzer_utils::fuzzer_assert!(
             block_size == 0 || (block_size.is_power_of_two() && block_size <= MAX_BLOCK_SIZE as u8),
             "Block size must be 0 or power of 2 and <= {MAX_BLOCK_SIZE}"
         );
@@ -496,11 +496,11 @@ impl TracingMemory {
 
     #[inline(always)]
     fn assert_alignment(&self, block_size: usize, align: usize, addr_space: u32, ptr: u32) {
-        debug_assert!(block_size.is_power_of_two());
-        debug_assert_eq!(block_size % align, 0);
-        debug_assert_ne!(addr_space, 0);
-        debug_assert_eq!(align as u32, self.min_block_size[addr_space as usize]);
-        assert_eq!(
+        fuzzer_utils::fuzzer_assert!(block_size.is_power_of_two());
+        fuzzer_utils::fuzzer_assert_eq!(block_size % align, 0);
+        fuzzer_utils::fuzzer_assert_ne!(addr_space, 0);
+        fuzzer_utils::fuzzer_assert_eq!(align as u32, self.min_block_size[addr_space as usize]);
+        fuzzer_utils::fuzzer_assert_eq!(
             ptr % (align as u32),
             0,
             "pointer={ptr} not aligned to {align}"
@@ -715,11 +715,11 @@ impl TracingMemory {
         pointer: usize,
         prev_values: &[T; BLOCK_SIZE],
     ) -> u32 {
-        debug_assert_eq!(ALIGN, self.data.memory.config[address_space].min_block_size);
+        fuzzer_utils::fuzzer_assert_eq!(ALIGN, self.data.memory.config[address_space].min_block_size);
         // SAFETY:
         // - address_space is validated during instruction decoding and guaranteed to be within
         //   bounds
-        debug_assert_eq!(
+        fuzzer_utils::fuzzer_assert_eq!(
             unsafe {
                 self.data
                     .memory
@@ -820,7 +820,7 @@ impl TracingMemory {
             );
         } else {
             // Create a merge record for single-byte initialization
-            debug_assert_eq!(self.initial_block_size, 1);
+            fuzzer_utils::fuzzer_assert_eq!(self.initial_block_size, 1);
             self.add_merge_record(
                 AccessRecordHeader {
                     timestamp_and_mask: INITIAL_TIMESTAMP,
@@ -951,7 +951,7 @@ impl TracingMemory {
 
     /// Returns the list of all touched blocks. The list is sorted by address.
     fn touched_blocks(&self) -> Vec<(Address, AccessMetadata)> {
-        assert_eq!(self.meta.len(), self.min_block_size.len());
+        fuzzer_utils::fuzzer_assert_eq!(self.meta.len(), self.min_block_size.len());
         self.meta
             .par_iter()
             .zip(self.min_block_size.par_iter())
@@ -981,10 +981,10 @@ impl TracingMemory {
         // [perf] We can `.with_capacity()` if we keep track of the number of segments we initialize
         let mut final_memory = Vec::new();
 
-        debug_assert!(touched_blocks.is_sorted_by_key(|(addr, _)| addr));
+        fuzzer_utils::fuzzer_assert!(touched_blocks.is_sorted_by_key(|(addr, _)| addr));
         self.handle_touched_blocks::<F, CHUNK>(&mut final_memory, touched_blocks);
 
-        debug_assert!(final_memory.is_sorted_by_key(|(key, _)| *key));
+        fuzzer_utils::fuzzer_assert!(final_memory.is_sorted_by_key(|(key, _)| *key));
         final_memory
     }
 
@@ -1005,17 +1005,17 @@ impl TracingMemory {
             let cell_size = addr_space_config.layout.size();
             let timestamp = access_metadata.timestamp();
             let block_size = access_metadata.block_size();
-            assert!(
+            fuzzer_utils::fuzzer_assert!(
                 current_cnt == 0
                     || (current_address.address_space == addr_space
                         && current_address.pointer + current_cnt as u32 == ptr),
                 "The union of all touched blocks must consist of blocks with sizes divisible by `CHUNK`"
             );
-            debug_assert!(block_size >= min_block_size as u8);
-            debug_assert!(ptr % min_block_size as u32 == 0);
+            fuzzer_utils::fuzzer_assert!(block_size >= min_block_size as u8);
+            fuzzer_utils::fuzzer_assert!(ptr % min_block_size as u32 == 0);
 
             if current_cnt == 0 {
-                assert_eq!(
+                fuzzer_utils::fuzzer_assert_eq!(
                     ptr & (CHUNK as u32 - 1),
                     0,
                     "The union of all touched blocks must consist of `CHUNK`-aligned blocks"
@@ -1034,7 +1034,7 @@ impl TracingMemory {
                 });
             }
             if min_block_size > CHUNK {
-                assert_eq!(current_cnt, 0);
+                fuzzer_utils::fuzzer_assert_eq!(current_cnt, 0);
                 for i in (0..block_size as u32).step_by(min_block_size) {
                     self.add_split_record(AccessRecordHeader {
                         timestamp_and_mask: timestamp,
@@ -1126,7 +1126,7 @@ impl TracingMemory {
                 }
             }
         }
-        assert_eq!(current_cnt, 0, "The union of all touched blocks must consist of blocks with sizes divisible by `CHUNK`");
+        fuzzer_utils::fuzzer_assert_eq!(current_cnt, 0, "The union of all touched blocks must consist of blocks with sizes divisible by `CHUNK`");
     }
 
     pub fn address_space_alignment(&self) -> Vec<u8> {

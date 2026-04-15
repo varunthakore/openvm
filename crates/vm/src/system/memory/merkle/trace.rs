@@ -28,7 +28,7 @@ impl<const CHUNK: usize, F: PrimeField32> MemoryMerkleChip<CHUNK, F> {
         final_memory: &Equipartition<F, CHUNK>,
         hasher: &impl HasherChip<CHUNK, F>,
     ) {
-        assert!(self.final_state.is_none(), "Merkle chip already finalized");
+        fuzzer_utils::fuzzer_assert!(self.final_state.is_none(), "Merkle chip already finalized");
         let memory_dimensions = &self.air.memory_dimensions;
         let mut tree = MerkleTree::from_memory(initial_memory, memory_dimensions, hasher);
         self.final_state = Some(tree.finalize(hasher, final_memory, memory_dimensions));
@@ -44,7 +44,7 @@ where
     where
         SC: StarkProtocolConfig<F = F>,
     {
-        assert!(
+        fuzzer_utils::fuzzer_assert!(
             self.final_state.is_some(),
             "Merkle chip must finalize before trace generation"
         );
@@ -66,7 +66,7 @@ where
         let mut height = rows.len().next_power_of_two();
         if let Some(mut oh) = self.overridden_height {
             oh = oh.next_power_of_two();
-            assert!(
+            fuzzer_utils::fuzzer_assert!(
                 oh >= height,
                 "Overridden height {oh} is less than the required height {height}"
             );
@@ -93,7 +93,7 @@ impl<'a, F: VmField, const SBOX_REGISTERS: usize> SerialReceiver<&'a [F]>
     /// Receives a permutation preimage, pads with zeros to the permutation width, and records.
     /// The permutation preimage must have length at most the permutation width (panics otherwise).
     fn receive(&self, perm_preimage: &'a [F]) {
-        assert!(perm_preimage.len() <= PERIPHERY_POSEIDON2_WIDTH);
+        fuzzer_utils::fuzzer_assert!(perm_preimage.len() <= PERIPHERY_POSEIDON2_WIDTH);
         let mut state = [F::ZERO; PERIPHERY_POSEIDON2_WIDTH];
         state[..perm_preimage.len()].copy_from_slice(perm_preimage);
         let count = self.records.entry(state).or_insert(AtomicU32::new(0));

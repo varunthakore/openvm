@@ -149,7 +149,7 @@ fn set_and_execute<RA: Arena, E: PreflightExecutor<F, RA>>(
         let data = tester.read::<4>(RV32_MEMORY_AS as usize, mem_ptr as usize + idx * 4);
 
         let expected: [F; 4] = input[idx * 4..(idx + 1) * 4].try_into().unwrap();
-        assert_eq!(data, expected);
+        fuzzer_utils::fuzzer_assert_eq!(data, expected);
     }
 }
 

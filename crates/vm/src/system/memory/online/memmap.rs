@@ -47,7 +47,7 @@ impl MmapMemory {
     #[inline(always)]
     fn check_bounds(&self, start: usize, size: usize) {
         let memory_size = self.size();
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             start <= memory_size && size <= memory_size - start,
             "Memory access out of bounds: start={} size={} memory_size={}",
             start,
@@ -164,7 +164,7 @@ impl LinearMemory for MmapMemory {
     #[inline(always)]
     unsafe fn copy_nonoverlapping<T: Copy>(&mut self, to: usize, data: &[T]) {
         self.check_bounds(to, size_of_val(data));
-        debug_assert_eq!(PAGE_SIZE % align_of::<T>(), 0);
+        fuzzer_utils::fuzzer_assert_eq!(PAGE_SIZE % align_of::<T>(), 0);
         let src = data.as_ptr();
         let dst = self.as_mut_ptr().add(to) as *mut T;
         // SAFETY:

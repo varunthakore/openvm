@@ -264,7 +264,7 @@ impl SystemConfig {
         mut memory_config: MemoryConfig,
         num_public_values: usize,
     ) -> Self {
-        assert!(
+        fuzzer_utils::fuzzer_assert!(
             memory_config.timestamp_max_bits <= 29,
             "Timestamp max bits must be <= 29 for LessThan to work in 31-bit field"
         );

@@ -173,7 +173,7 @@ impl<SC: StarkProtocolConfig> SystemAirInventory<SC> {
             range_bus,
             config.memory_config.timestamp_max_bits,
         );
-        assert_eq!(
+        fuzzer_utils::fuzzer_assert_eq!(
             config.continuation_enabled,
             merkle_compression_buses.is_some()
         );
@@ -283,7 +283,7 @@ where
         inventory.add_air(range_checker);
 
         if self.continuation_enabled {
-            assert_eq!(inventory.ext_airs().len(), POSEIDON2_INSERTION_IDX);
+            fuzzer_utils::fuzzer_assert_eq!(inventory.ext_airs().len(), POSEIDON2_INSERTION_IDX);
             // Add direct poseidon2 AIR for persistent memory.
             // Currently we never use poseidon2 opcodes when continuations is enabled: we will need
             // special handling when that happens
@@ -346,7 +346,7 @@ where
                 boundary: _,
                 merkle,
             } => {
-                assert!(config.continuation_enabled);
+                fuzzer_utils::fuzzer_assert!(config.continuation_enabled);
                 MemoryController::<Val<SC>>::with_persistent_memory(
                     memory_bus,
                     config.memory_config.clone(),
@@ -357,7 +357,7 @@ where
                 )
             }
             MemoryInterfaceAirs::Volatile { boundary: _ } => {
-                assert!(!config.continuation_enabled);
+                fuzzer_utils::fuzzer_assert!(!config.continuation_enabled);
                 MemoryController::with_volatile_memory(
                     memory_bus,
                     config.memory_config.clone(),
@@ -494,7 +494,7 @@ where
         inventory.add_periphery_chip(range_checker.clone());
 
         let hasher_chip = if config.continuation_enabled {
-            assert_eq!(inventory.chips().len(), POSEIDON2_INSERTION_IDX);
+            fuzzer_utils::fuzzer_assert_eq!(inventory.chips().len(), POSEIDON2_INSERTION_IDX);
             // ATTENTION: The threshold 7 here must match the one in `new_poseidon2_periphery_air`
             if config.max_constraint_degree >= 7 {
                 inventory.next_air::<Poseidon2PeripheryAir<Val<SC>, 0>>()?;
@@ -531,7 +531,7 @@ where
     /// Warning: this does not set the override for the program chip. The program chip
     /// override must be set via the RecordArena.
     fn override_trace_heights(&mut self, heights: &[u32]) {
-        assert_eq!(
+        fuzzer_utils::fuzzer_assert_eq!(
             heights[PROGRAM_AIR_ID] as usize,
             self.program_chip
                 .cached
@@ -539,7 +539,7 @@ where
                 .expect("program not loaded")
                 .height()
         );
-        assert_eq!(heights[CONNECTOR_AIR_ID], 2);
+        fuzzer_utils::fuzzer_assert_eq!(heights[CONNECTOR_AIR_ID], 2);
         self.memory_controller
             .set_override_trace_heights(&heights[MEMORY_AIRS_START_IDX..]);
     }

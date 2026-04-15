@@ -210,7 +210,7 @@ fn test_program_negative() {
         any_air_arc_vec!(program_air, counter_air),
         vec![ctx, AirProvingContext::simple_no_pis(counter_trace)],
     );
-    assert!(matches!(result, Err(StarkTestError::Prover(_))));
+    fuzzer_utils::fuzzer_assert!(matches!(result, Err(StarkTestError::Prover(_))));
 }
 
 #[test]

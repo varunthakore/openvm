@@ -165,8 +165,8 @@ fn set_and_execute<RA: Arena, E: PreflightExecutor<F, RA>>(
     let (next_pc, rd_data) = run_jalr(initial_pc, rs1, imm as u16, imm_sign == 1);
     let rd_data = if a == 0 { [0; 4] } else { rd_data };
 
-    assert_eq!(next_pc & !1, final_pc);
-    assert_eq!(rd_data.map(F::from_u8), tester.read::<4>(1, a));
+    fuzzer_utils::fuzzer_assert_eq!(next_pc & !1, final_pc);
+    fuzzer_utils::fuzzer_assert_eq!(rd_data.map(F::from_u8), tester.read::<4>(1, a));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -362,8 +362,8 @@ fn run_jalr_sanity_test() {
     let imm = -1235_i32 as u32;
     let rs1 = 736482910;
     let (next_pc, rd_data) = run_jalr(initial_pc, rs1, imm as u16, true);
-    assert_eq!(next_pc & !1, 736481674);
-    assert_eq!(rd_data, [252, 36, 14, 47]);
+    fuzzer_utils::fuzzer_assert_eq!(next_pc & !1, 736481674);
+    fuzzer_utils::fuzzer_assert_eq!(rd_data, [252, 36, 14, 47]);
 }
 
 #[cfg(feature = "aot")]
@@ -388,7 +388,7 @@ fn run_jalr_program(instructions: Vec<Instruction<F>>) -> (VmState<F>, VmState<F
         .expect("AOT execution must succeed");
 
     // TODO: add this code to AOT utils file for testing purposes to check equivalence of VMStates
-    assert_eq!(interp_state.pc(), aot_state.pc());
+    fuzzer_utils::fuzzer_assert_eq!(interp_state.pc(), aot_state.pc());
     use openvm_circuit::{
         arch::hasher::poseidon2::vm_poseidon2_hasher, system::memory::merkle::MerkleTree,
     };
@@ -398,7 +398,7 @@ fn run_jalr_program(instructions: Vec<Instruction<F>>) -> (VmState<F>, VmState<F
     let tree1 = MerkleTree::from_memory(&interp_state.memory.memory, &memory_dimensions, &hasher);
     let tree2 = MerkleTree::from_memory(&aot_state.memory.memory, &memory_dimensions, &hasher);
 
-    assert_eq!(tree1.root(), tree2.root(), "Memory states differ");
+    fuzzer_utils::fuzzer_assert_eq!(tree1.root(), tree2.root(), "Memory states differ");
     (interp_state, aot_state)
 }
 
@@ -423,13 +423,13 @@ fn test_jalr_aot_jump_forward() {
 
     let (interp_state, aot_state) = run_jalr_program(instructions);
 
-    assert_eq!(interp_state.pc(), 8);
-    assert_eq!(aot_state.pc(), 8);
+    fuzzer_utils::fuzzer_assert_eq!(interp_state.pc(), 8);
+    fuzzer_utils::fuzzer_assert_eq!(aot_state.pc(), 8);
 
     let interp_x1 = read_register(&interp_state, 4);
     let aot_x1 = read_register(&aot_state, 4);
-    assert_eq!(interp_x1, 8);
-    assert_eq!(interp_x1, aot_x1);
+    fuzzer_utils::fuzzer_assert_eq!(interp_x1, 8);
+    fuzzer_utils::fuzzer_assert_eq!(interp_x1, aot_x1);
 }
 
 #[cfg(feature = "aot")]
@@ -450,18 +450,18 @@ fn test_jalr_aot_writes_return_address() {
 
     let (interp_state, aot_state) = run_jalr_program(instructions);
 
-    assert_eq!(interp_state.pc(), 8);
-    assert_eq!(aot_state.pc(), 8);
+    fuzzer_utils::fuzzer_assert_eq!(interp_state.pc(), 8);
+    fuzzer_utils::fuzzer_assert_eq!(aot_state.pc(), 8);
 
     let interp_x1 = read_register(&interp_state, 4);
     let aot_x1 = read_register(&aot_state, 4);
-    assert_eq!(interp_x1, 12);
-    assert_eq!(interp_x1, aot_x1);
+    fuzzer_utils::fuzzer_assert_eq!(interp_x1, 12);
+    fuzzer_utils::fuzzer_assert_eq!(interp_x1, aot_x1);
 
     let interp_x3 = read_register(&interp_state, 12);
     let aot_x3 = read_register(&aot_state, 12);
-    assert_eq!(interp_x3, 8);
-    assert_eq!(interp_x3, aot_x3);
+    fuzzer_utils::fuzzer_assert_eq!(interp_x3, 8);
+    fuzzer_utils::fuzzer_assert_eq!(interp_x3, aot_x3);
 }
 
 // ////////////////////////////////////////////////////////////////////////////////////

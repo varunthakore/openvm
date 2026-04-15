@@ -158,7 +158,7 @@ fn set_and_execute<RA: Arena, E: PreflightExecutor<F, RA>>(
     let to_pc = tester.last_to_pc().as_canonical_u32() as i32;
     let pc_inc = if cmp_result { imm } else { 4 };
 
-    assert_eq!(to_pc, from_pc + pc_inc);
+    fuzzer_utils::fuzzer_assert_eq!(to_pc, from_pc + pc_inc);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -544,20 +544,20 @@ fn run_cmp_unsigned_sanity_test() {
         &x,
         &y,
     );
-    assert!(cmp_result);
-    assert_eq!(diff_idx, 1);
-    assert!(!x_sign); // unsigned
-    assert!(!y_sign); // unsigned
+    fuzzer_utils::fuzzer_assert!(cmp_result);
+    fuzzer_utils::fuzzer_assert_eq!(diff_idx, 1);
+    fuzzer_utils::fuzzer_assert!(!x_sign); // unsigned
+    fuzzer_utils::fuzzer_assert!(!y_sign); // unsigned
 
     let (cmp_result, diff_idx, x_sign, y_sign) = run_cmp::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(
         BranchLessThanOpcode::BGEU as u8,
         &x,
         &y,
     );
-    assert!(!cmp_result);
-    assert_eq!(diff_idx, 1);
-    assert!(!x_sign); // unsigned
-    assert!(!y_sign); // unsigned
+    fuzzer_utils::fuzzer_assert!(!cmp_result);
+    fuzzer_utils::fuzzer_assert_eq!(diff_idx, 1);
+    fuzzer_utils::fuzzer_assert!(!x_sign); // unsigned
+    fuzzer_utils::fuzzer_assert!(!y_sign); // unsigned
 }
 
 #[test]
@@ -566,17 +566,17 @@ fn run_cmp_same_sign_sanity_test() {
     let y: [u8; RV32_REGISTER_NUM_LIMBS] = [73, 35, 25, 205];
     let (cmp_result, diff_idx, x_sign, y_sign) =
         run_cmp::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(BranchLessThanOpcode::BLT as u8, &x, &y);
-    assert!(cmp_result);
-    assert_eq!(diff_idx, 1);
-    assert!(x_sign); // negative
-    assert!(y_sign); // negative
+    fuzzer_utils::fuzzer_assert!(cmp_result);
+    fuzzer_utils::fuzzer_assert_eq!(diff_idx, 1);
+    fuzzer_utils::fuzzer_assert!(x_sign); // negative
+    fuzzer_utils::fuzzer_assert!(y_sign); // negative
 
     let (cmp_result, diff_idx, x_sign, y_sign) =
         run_cmp::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(BranchLessThanOpcode::BGE as u8, &x, &y);
-    assert!(!cmp_result);
-    assert_eq!(diff_idx, 1);
-    assert!(x_sign); // negative
-    assert!(y_sign); // negative
+    fuzzer_utils::fuzzer_assert!(!cmp_result);
+    fuzzer_utils::fuzzer_assert_eq!(diff_idx, 1);
+    fuzzer_utils::fuzzer_assert!(x_sign); // negative
+    fuzzer_utils::fuzzer_assert!(y_sign); // negative
 }
 
 #[test]
@@ -585,17 +585,17 @@ fn run_cmp_diff_sign_sanity_test() {
     let y: [u8; RV32_REGISTER_NUM_LIMBS] = [173, 34, 25, 205];
     let (cmp_result, diff_idx, x_sign, y_sign) =
         run_cmp::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(BranchLessThanOpcode::BLT as u8, &x, &y);
-    assert!(!cmp_result);
-    assert_eq!(diff_idx, 3);
-    assert!(!x_sign); // positive
-    assert!(y_sign); // negative
+    fuzzer_utils::fuzzer_assert!(!cmp_result);
+    fuzzer_utils::fuzzer_assert_eq!(diff_idx, 3);
+    fuzzer_utils::fuzzer_assert!(!x_sign); // positive
+    fuzzer_utils::fuzzer_assert!(y_sign); // negative
 
     let (cmp_result, diff_idx, x_sign, y_sign) =
         run_cmp::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(BranchLessThanOpcode::BGE as u8, &x, &y);
-    assert!(cmp_result);
-    assert_eq!(diff_idx, 3);
-    assert!(!x_sign); // positive
-    assert!(y_sign); // negative
+    fuzzer_utils::fuzzer_assert!(cmp_result);
+    fuzzer_utils::fuzzer_assert_eq!(diff_idx, 3);
+    fuzzer_utils::fuzzer_assert!(!x_sign); // positive
+    fuzzer_utils::fuzzer_assert!(y_sign); // negative
 }
 
 #[test]
@@ -603,33 +603,33 @@ fn run_cmp_eq_sanity_test() {
     let x: [u8; RV32_REGISTER_NUM_LIMBS] = [45, 35, 25, 55];
     let (cmp_result, diff_idx, x_sign, y_sign) =
         run_cmp::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(BranchLessThanOpcode::BLT as u8, &x, &x);
-    assert!(!cmp_result);
-    assert_eq!(diff_idx, RV32_REGISTER_NUM_LIMBS);
-    assert_eq!(x_sign, y_sign);
+    fuzzer_utils::fuzzer_assert!(!cmp_result);
+    fuzzer_utils::fuzzer_assert_eq!(diff_idx, RV32_REGISTER_NUM_LIMBS);
+    fuzzer_utils::fuzzer_assert_eq!(x_sign, y_sign);
 
     let (cmp_result, diff_idx, x_sign, y_sign) = run_cmp::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(
         BranchLessThanOpcode::BLTU as u8,
         &x,
         &x,
     );
-    assert!(!cmp_result);
-    assert_eq!(diff_idx, RV32_REGISTER_NUM_LIMBS);
-    assert_eq!(x_sign, y_sign);
+    fuzzer_utils::fuzzer_assert!(!cmp_result);
+    fuzzer_utils::fuzzer_assert_eq!(diff_idx, RV32_REGISTER_NUM_LIMBS);
+    fuzzer_utils::fuzzer_assert_eq!(x_sign, y_sign);
 
     let (cmp_result, diff_idx, x_sign, y_sign) =
         run_cmp::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(BranchLessThanOpcode::BGE as u8, &x, &x);
-    assert!(cmp_result);
-    assert_eq!(diff_idx, RV32_REGISTER_NUM_LIMBS);
-    assert_eq!(x_sign, y_sign);
+    fuzzer_utils::fuzzer_assert!(cmp_result);
+    fuzzer_utils::fuzzer_assert_eq!(diff_idx, RV32_REGISTER_NUM_LIMBS);
+    fuzzer_utils::fuzzer_assert_eq!(x_sign, y_sign);
 
     let (cmp_result, diff_idx, x_sign, y_sign) = run_cmp::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(
         BranchLessThanOpcode::BGEU as u8,
         &x,
         &x,
     );
-    assert!(cmp_result);
-    assert_eq!(diff_idx, RV32_REGISTER_NUM_LIMBS);
-    assert_eq!(x_sign, y_sign);
+    fuzzer_utils::fuzzer_assert!(cmp_result);
+    fuzzer_utils::fuzzer_assert_eq!(diff_idx, RV32_REGISTER_NUM_LIMBS);
+    fuzzer_utils::fuzzer_assert_eq!(x_sign, y_sign);
 }
 
 // ////////////////////////////////////////////////////////////////////////////////////

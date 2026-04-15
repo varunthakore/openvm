@@ -116,7 +116,7 @@ impl<F: PrimeField32> MemoryDummyChip<F> {
     }
 
     pub fn push(&mut self, addr_space: u32, ptr: u32, data: &[F], timestamp: u32, count: F) {
-        assert_eq!(data.len(), self.air.block_size);
+        fuzzer_utils::fuzzer_assert_eq!(data.len(), self.air.block_size);
         self.trace.push(F::from_u32(addr_space));
         self.trace.push(F::from_u32(ptr));
         self.trace.extend_from_slice(data);

@@ -58,19 +58,19 @@ impl<const PAGE_BITS: usize> MeteredCtx<PAGE_BITS> {
         let memory_ctx = MemoryCtx::new(config, segmentation_ctx.segment_check_insns);
 
         // Assert that the indices are correct
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             segmentation_ctx.air_names[memory_ctx.boundary_idx].contains("Boundary"),
             "air_name={}",
             segmentation_ctx.air_names[memory_ctx.boundary_idx]
         );
         if let Some(merkle_tree_index) = memory_ctx.merkle_tree_index {
-            debug_assert!(
+            fuzzer_utils::fuzzer_assert!(
                 segmentation_ctx.air_names[merkle_tree_index].contains("Merkle"),
                 "air_name={}",
                 segmentation_ctx.air_names[merkle_tree_index]
             );
         }
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             segmentation_ctx.air_names[memory_ctx.adapter_offset].contains("AccessAdapterAir<2>"),
             "air_name={}",
             segmentation_ctx.air_names[memory_ctx.adapter_offset]
@@ -233,12 +233,12 @@ impl<const PAGE_BITS: usize> MeteredCtx<PAGE_BITS> {
 impl<const PAGE_BITS: usize> ExecutionCtxTrait for MeteredCtx<PAGE_BITS> {
     #[inline(always)]
     fn on_memory_operation(&mut self, address_space: u32, ptr: u32, size: u32) {
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             address_space != RV32_IMM_AS,
             "address space must not be immediate"
         );
-        debug_assert!(size > 0, "size must be greater than 0, got {size}");
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(size > 0, "size must be greater than 0, got {size}");
+        fuzzer_utils::fuzzer_assert!(
             size.is_power_of_two(),
             "size must be a power of 2, got {size}"
         );
@@ -287,7 +287,7 @@ impl<const PAGE_BITS: usize> ExecutionCtxTrait for MeteredCtx<PAGE_BITS> {
 impl<const PAGE_BITS: usize> MeteredExecutionCtxTrait for MeteredCtx<PAGE_BITS> {
     #[inline(always)]
     fn on_height_change(&mut self, chip_idx: usize, height_delta: u32) {
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             chip_idx < self.trace_heights.len(),
             "chip_idx out of bounds"
         );

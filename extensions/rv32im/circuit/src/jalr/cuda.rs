@@ -28,7 +28,7 @@ impl Chip<DenseRecordArena, GpuBackend> for Rv32JalrChipGpu {
         if records.is_empty() {
             return AirProvingContext::simple_no_pis(DeviceMatrix::dummy());
         }
-        debug_assert_eq!(records.len() % RECORD_SIZE, 0);
+        fuzzer_utils::fuzzer_assert_eq!(records.len() % RECORD_SIZE, 0);
 
         let trace_width = Rv32JalrCoreCols::<F>::width() + Rv32JalrAdapterCols::<F>::width();
         let trace_height = next_power_of_two_or_zero(records.len() / RECORD_SIZE);

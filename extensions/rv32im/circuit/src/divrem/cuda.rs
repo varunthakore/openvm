@@ -36,7 +36,7 @@ impl Chip<DenseRecordArena, GpuBackend> for Rv32DivRemChipGpu {
         if records.is_empty() {
             return AirProvingContext::simple_no_pis(DeviceMatrix::dummy());
         }
-        debug_assert_eq!(records.len() % RECORD_SIZE, 0);
+        fuzzer_utils::fuzzer_assert_eq!(records.len() % RECORD_SIZE, 0);
 
         let trace_width = DivRemCoreCols::<F, RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>::width()
             + Rv32MultAdapterCols::<F>::width();

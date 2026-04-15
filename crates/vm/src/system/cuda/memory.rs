@@ -192,7 +192,7 @@ impl MemoryInventoryGPU {
                 } else {
                     (partition, false)
                 };
-                debug_assert_eq!(
+                fuzzer_utils::fuzzer_assert_eq!(
                     size_of_val(&touched_memory[0]),
                     TIMESTAMPED_BLOCK_WIDTH * size_of::<u32>()
                 );
@@ -215,7 +215,7 @@ impl MemoryInventoryGPU {
                 Some(merkle_tree_ctx)
             }
             TouchedMemory::Volatile(partition) => {
-                assert!(self.persistent.is_none(), "TouchedMemory enum mismatch");
+                fuzzer_utils::fuzzer_assert!(self.persistent.is_none(), "TouchedMemory enum mismatch");
                 self.boundary.finalize_records_volatile(partition);
                 None
             }

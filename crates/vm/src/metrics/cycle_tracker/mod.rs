@@ -32,7 +32,7 @@ impl CycleTracker {
             name = name.split_off(3);
         }
         let stack_top = self.stack.pop();
-        assert_eq!(stack_top.unwrap(), name, "Stack top does not match name");
+        fuzzer_utils::fuzzer_assert_eq!(stack_top.unwrap(), name, "Stack top does not match name");
     }
 
     /// Ends the current cycle tracker span.

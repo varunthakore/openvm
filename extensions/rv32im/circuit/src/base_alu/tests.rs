@@ -136,7 +136,7 @@ fn set_and_execute<RA: Arena, E: PreflightExecutor<F, RA>>(
     tester.execute(executor, arena, &instruction);
 
     let a = run_alu::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(opcode, &b, &c).map(F::from_u8);
-    assert_eq!(a, tester.read::<RV32_REGISTER_NUM_LIMBS>(1, rd))
+    fuzzer_utils::fuzzer_assert_eq!(a, tester.read::<RV32_REGISTER_NUM_LIMBS>(1, rd))
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -161,7 +161,7 @@ fn rand_rv32_alu_test(opcode: BaseAluOpcode, num_ops: usize) {
     tester.write(2, 1024, [F::ONE; 4]);
     tester.write(2, 1028, [F::ONE; 4]);
     let sm = tester.read(2, 1024);
-    assert_eq!(sm, [F::ONE; 8]);
+    fuzzer_utils::fuzzer_assert_eq!(sm, [F::ONE; 8]);
 
     for _ in 0..num_ops {
         set_and_execute(
@@ -199,7 +199,7 @@ fn rand_rv32_alu_test_persistent(opcode: BaseAluOpcode, num_ops: usize) {
     tester.write(2, 1024, [F::ONE; 4]);
     tester.write(2, 1028, [F::ONE; 4]);
     let sm = tester.read(2, 1024);
-    assert_eq!(sm, [F::ONE; 8]);
+    fuzzer_utils::fuzzer_assert_eq!(sm, [F::ONE; 8]);
 
     for _ in 0..num_ops {
         set_and_execute(
@@ -413,7 +413,7 @@ fn run_add_sanity_test() {
     let z: [u8; RV32_REGISTER_NUM_LIMBS] = [23, 205, 73, 49];
     let result = run_alu::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(ADD, &x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(z[i], result[i])
+        fuzzer_utils::fuzzer_assert_eq!(z[i], result[i])
     }
 }
 
@@ -424,7 +424,7 @@ fn run_sub_sanity_test() {
     let z: [u8; RV32_REGISTER_NUM_LIMBS] = [179, 118, 240, 172];
     let result = run_alu::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(SUB, &x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(z[i], result[i])
+        fuzzer_utils::fuzzer_assert_eq!(z[i], result[i])
     }
 }
 
@@ -435,7 +435,7 @@ fn run_xor_sanity_test() {
     let z: [u8; RV32_REGISTER_NUM_LIMBS] = [215, 138, 49, 173];
     let result = run_alu::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(XOR, &x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(z[i], result[i])
+        fuzzer_utils::fuzzer_assert_eq!(z[i], result[i])
     }
 }
 
@@ -446,7 +446,7 @@ fn run_or_sanity_test() {
     let z: [u8; RV32_REGISTER_NUM_LIMBS] = [247, 171, 61, 239];
     let result = run_alu::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(OR, &x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(z[i], result[i])
+        fuzzer_utils::fuzzer_assert_eq!(z[i], result[i])
     }
 }
 
@@ -457,7 +457,7 @@ fn run_and_sanity_test() {
     let z: [u8; RV32_REGISTER_NUM_LIMBS] = [32, 33, 12, 66];
     let result = run_alu::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(AND, &x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(z[i], result[i])
+        fuzzer_utils::fuzzer_assert_eq!(z[i], result[i])
     }
 }
 

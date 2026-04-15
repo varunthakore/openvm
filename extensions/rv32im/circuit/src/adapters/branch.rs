@@ -147,8 +147,8 @@ where
     ) -> Self::ReadData {
         let &Instruction { a, b, d, e, .. } = instruction;
 
-        debug_assert_eq!(d.as_canonical_u32(), RV32_REGISTER_AS);
-        debug_assert_eq!(e.as_canonical_u32(), RV32_REGISTER_AS);
+        fuzzer_utils::fuzzer_assert_eq!(d.as_canonical_u32(), RV32_REGISTER_AS);
+        fuzzer_utils::fuzzer_assert_eq!(e.as_canonical_u32(), RV32_REGISTER_AS);
 
         record.rs1_ptr = a.as_canonical_u32();
         let rs1 = tracing_read(

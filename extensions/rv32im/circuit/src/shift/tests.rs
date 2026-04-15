@@ -145,7 +145,7 @@ fn set_and_execute<RA: Arena, E: PreflightExecutor<F, RA>>(
     tester.execute(executor, arena, &instruction);
 
     let (a, _, _) = run_shift::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(opcode, &b, &c);
-    assert_eq!(
+    fuzzer_utils::fuzzer_assert_eq!(
         a.map(F::from_u8),
         tester.read::<RV32_REGISTER_NUM_LIMBS>(1, rd)
     )
@@ -420,11 +420,11 @@ fn run_sll_sanity_test() {
     let (result, limb_shift, bit_shift) =
         run_shift::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(SLL, &x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(z[i], result[i])
+        fuzzer_utils::fuzzer_assert_eq!(z[i], result[i])
     }
     let shift = (y[0] as usize) % (RV32_REGISTER_NUM_LIMBS * RV32_CELL_BITS);
-    assert_eq!(shift / RV32_CELL_BITS, limb_shift);
-    assert_eq!(shift % RV32_CELL_BITS, bit_shift);
+    fuzzer_utils::fuzzer_assert_eq!(shift / RV32_CELL_BITS, limb_shift);
+    fuzzer_utils::fuzzer_assert_eq!(shift % RV32_CELL_BITS, bit_shift);
 }
 
 #[test]
@@ -435,11 +435,11 @@ fn run_srl_sanity_test() {
     let (result, limb_shift, bit_shift) =
         run_shift::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(SRL, &x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(z[i], result[i])
+        fuzzer_utils::fuzzer_assert_eq!(z[i], result[i])
     }
     let shift = (y[0] as usize) % (RV32_REGISTER_NUM_LIMBS * RV32_CELL_BITS);
-    assert_eq!(shift / RV32_CELL_BITS, limb_shift);
-    assert_eq!(shift % RV32_CELL_BITS, bit_shift);
+    fuzzer_utils::fuzzer_assert_eq!(shift / RV32_CELL_BITS, limb_shift);
+    fuzzer_utils::fuzzer_assert_eq!(shift % RV32_CELL_BITS, bit_shift);
 }
 
 #[test]
@@ -450,11 +450,11 @@ fn run_sra_sanity_test() {
     let (result, limb_shift, bit_shift) =
         run_shift::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(SRA, &x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(z[i], result[i])
+        fuzzer_utils::fuzzer_assert_eq!(z[i], result[i])
     }
     let shift = (y[0] as usize) % (RV32_REGISTER_NUM_LIMBS * RV32_CELL_BITS);
-    assert_eq!(shift / RV32_CELL_BITS, limb_shift);
-    assert_eq!(shift % RV32_CELL_BITS, bit_shift);
+    fuzzer_utils::fuzzer_assert_eq!(shift / RV32_CELL_BITS, limb_shift);
+    fuzzer_utils::fuzzer_assert_eq!(shift % RV32_CELL_BITS, bit_shift);
 }
 
 // ////////////////////////////////////////////////////////////////////////////////////

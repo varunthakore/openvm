@@ -218,7 +218,7 @@ unsafe fn execute_e12_impl<F: PrimeField32, CTX: ExecutionCtxTrait, const ENABLE
     let rs1 = u32::from_le_bytes(rs1);
     let to_pc = rs1.wrapping_add(pre_compute.imm_extended);
     let to_pc = to_pc - (to_pc & 1);
-    debug_assert!(to_pc < (1 << PC_BITS));
+    fuzzer_utils::fuzzer_assert!(to_pc < (1 << PC_BITS));
     let rd = (pc + DEFAULT_PC_STEP).to_le_bytes();
 
     if ENABLED {

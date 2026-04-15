@@ -129,11 +129,11 @@ where
         let addr_spaces = &system_config.memory_config.addr_spaces;
         let assert_vm_state_eq =
             |lhs: &VmState<Val<E::SC>, GuestMemory>, rhs: &VmState<Val<E::SC>, GuestMemory>| {
-                assert_eq!(lhs.pc(), rhs.pc());
+                fuzzer_utils::fuzzer_assert_eq!(lhs.pc(), rhs.pc());
                 for r in 0..addr_spaces[1].num_cells {
                     let a = unsafe { lhs.memory.read::<u8, 1>(1, r as u32) };
                     let b = unsafe { rhs.memory.read::<u8, 1>(1, r as u32) };
-                    assert_eq!(a, b);
+                    fuzzer_utils::fuzzer_assert_eq!(a, b);
                 }
             };
         assert_vm_state_eq(&interp_state_pure, &aot_state_pure);
@@ -153,7 +153,7 @@ where
             .naive_metered_interpreter(exe)?
             .execute_metered(input.clone(), metered_ctx.clone())?;
 
-        assert_eq!(interp_state_metered.pc(), aot_state_metered.pc());
+        fuzzer_utils::fuzzer_assert_eq!(interp_state_metered.pc(), aot_state_metered.pc());
 
         let system_config: &SystemConfig = config.as_ref();
         let addr_spaces = &system_config.memory_config.addr_spaces;
@@ -161,14 +161,14 @@ where
         for r in 0..addr_spaces[1].num_cells {
             let interp = unsafe { interp_state_metered.memory.read::<u8, 1>(1, r as u32) };
             let aot_interp = unsafe { aot_state_metered.memory.read::<u8, 1>(1, r as u32) };
-            assert_eq!(interp, aot_interp);
+            fuzzer_utils::fuzzer_assert_eq!(interp, aot_interp);
         }
 
-        assert_eq!(segments.len(), aot_segments.len());
+        fuzzer_utils::fuzzer_assert_eq!(segments.len(), aot_segments.len());
         for i in 0..segments.len() {
-            assert_eq!(segments[i].instret_start, aot_segments[i].instret_start);
-            assert_eq!(segments[i].num_insns, aot_segments[i].num_insns);
-            assert_eq!(segments[i].trace_heights, aot_segments[i].trace_heights);
+            fuzzer_utils::fuzzer_assert_eq!(segments[i].instret_start, aot_segments[i].instret_start);
+            fuzzer_utils::fuzzer_assert_eq!(segments[i].num_insns, aot_segments[i].num_insns);
+            fuzzer_utils::fuzzer_assert_eq!(segments[i].trace_heights, aot_segments[i].trace_heights);
         }
     }
 
@@ -251,7 +251,7 @@ where
         let proof = vm.engine.prove(vm.pk(), ctx).unwrap();
         proofs.push(proof);
     }
-    assert!(proofs.len() >= min_segments);
+    fuzzer_utils::fuzzer_assert!(proofs.len() >= min_segments);
     match vm.verify(&vk, &proofs) {
         Ok(()) => {}
         Err(err) => {

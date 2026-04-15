@@ -138,7 +138,7 @@ pub mod jalr_cuda {
         bitwise_num_bits: usize,
         timestamp_max_bits: u32,
     ) -> Result<(), CudaError> {
-        assert!(height.is_power_of_two() || height == 0);
+        fuzzer_utils::fuzzer_assert!(height.is_power_of_two() || height == 0);
         CudaError::from_result(_jalr_tracegen(
             d_trace.as_mut_ptr(),
             height,
@@ -467,7 +467,7 @@ pub mod jal_lui_cuda {
         bitwise_num_bits: usize,
         timestamp_max_bits: u32,
     ) -> Result<(), CudaError> {
-        assert!(height.is_power_of_two() || height == 0);
+        fuzzer_utils::fuzzer_assert!(height.is_power_of_two() || height == 0);
         CudaError::from_result(_jal_lui_tracegen(
             d_trace.as_mut_ptr(),
             height,
@@ -504,7 +504,7 @@ pub mod beq_cuda {
         d_range_checker: &DeviceBuffer<F>,
         timestamp_max_bits: u32,
     ) -> Result<(), CudaError> {
-        assert!(height.is_power_of_two() || height == 0);
+        fuzzer_utils::fuzzer_assert!(height.is_power_of_two() || height == 0);
         CudaError::from_result(_beq_tracegen(
             d_trace.as_mut_ptr(),
             height,
@@ -543,7 +543,7 @@ pub mod branch_lt_cuda {
         bitwise_num_bits: usize,
         timestamp_max_bits: u32,
     ) -> Result<(), CudaError> {
-        assert!(height.is_power_of_two() || height == 0);
+        fuzzer_utils::fuzzer_assert!(height.is_power_of_two() || height == 0);
         CudaError::from_result(_blt_tracegen(
             d_trace.as_mut_ptr(),
             height,
@@ -589,7 +589,7 @@ pub mod mulh_cuda {
         range_tuple_checker_sizes: UInt2,
         timestamp_max_bits: u32,
     ) -> Result<(), CudaError> {
-        assert!(height.is_power_of_two() || height == 0);
+        fuzzer_utils::fuzzer_assert!(height.is_power_of_two() || height == 0);
         CudaError::from_result(_mulh_tracegen(
             d_trace.as_mut_ptr(),
             height,

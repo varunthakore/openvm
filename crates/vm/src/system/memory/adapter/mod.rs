@@ -57,7 +57,7 @@ impl<F: Clone + Send + Sync> AccessAdapterInventory<F> {
         let mb = memory_bus;
         let tmb = memory_config.timestamp_max_bits;
         let maan = memory_config.max_access_adapter_n;
-        assert!(matches!(maan, 2 | 4 | 8 | 16 | 32));
+        fuzzer_utils::fuzzer_assert!(matches!(maan, 2 | 4 | 8 | 16 | 32));
         let chips: Vec<_> = [
             Self::create_access_adapter_chip::<2>(rc.clone(), mb, tmb, maan),
             Self::create_access_adapter_chip::<4>(rc.clone(), mb, tmb, maan),
@@ -94,7 +94,7 @@ impl<F: Clone + Send + Sync> AccessAdapterInventory<F> {
     }
 
     pub(super) fn set_arena_from_trace_heights(&mut self, trace_heights: &[u32]) {
-        assert_eq!(trace_heights.len(), self.chips.len());
+        fuzzer_utils::fuzzer_assert_eq!(trace_heights.len(), self.chips.len());
         let size_bound = arena_size_bound(trace_heights);
         tracing::debug!(
             "Allocating {} bytes for memory adapters arena from heights {:?}",
@@ -144,7 +144,7 @@ impl<F: Clone + Send + Sync> AccessAdapterInventory<F> {
     fn apply_overridden_heights(&mut self, heights: &mut [usize]) {
         for (i, h) in heights.iter_mut().enumerate() {
             if let Some(oh) = self.chips[i].overridden_trace_height() {
-                assert!(
+                fuzzer_utils::fuzzer_assert!(
                     oh >= *h,
                     "Overridden height {oh} is less than the required height {}",
                     *h

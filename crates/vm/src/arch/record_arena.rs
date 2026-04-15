@@ -146,17 +146,17 @@ impl<F: Field> RowMajorMatrixArena<F> for MatrixRecordArena<F> {
 
     fn into_matrix(mut self) -> RowMajorMatrix<F> {
         let width = self.width();
-        assert_eq!(self.trace_offset() % width, 0);
+        fuzzer_utils::fuzzer_assert_eq!(self.trace_offset() % width, 0);
         let rows_used = self.trace_offset() / width;
         let height = next_power_of_two_or_zero(rows_used);
         // This should be automatic since trace_buffer's height is a power of two:
-        assert!(height.checked_mul(width).unwrap() <= self.trace_buffer.len());
+        fuzzer_utils::fuzzer_assert!(height.checked_mul(width).unwrap() <= self.trace_buffer.len());
         if self.allow_truncate {
             self.trace_buffer.truncate(height * width);
         } else {
-            assert_eq!(self.trace_buffer.len() % width, 0);
+            fuzzer_utils::fuzzer_assert_eq!(self.trace_buffer.len() % width, 0);
             let height = self.trace_buffer.len() / width;
-            assert!(height.is_power_of_two() || height == 0);
+            fuzzer_utils::fuzzer_assert!(height.is_power_of_two() || height == 0);
         }
         RowMajorMatrix::new(self.trace_buffer, self.width)
     }
@@ -198,7 +198,7 @@ impl DenseRecordArena {
     /// Allocates `count` bytes and returns as a mutable slice.
     pub fn alloc_bytes<'a>(&mut self, count: usize) -> &'a mut [u8] {
         let begin = self.records_buffer.position();
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             begin as usize + count <= self.records_buffer.get_ref().len(),
             "failed to allocate {count} bytes from {begin} when the capacity is {}",
             self.records_buffer.get_ref().len()
@@ -235,7 +235,7 @@ impl DenseRecordArena {
     }
 
     pub fn align_to(&mut self, alignment: usize) {
-        debug_assert!(MAX_ALIGNMENT.is_multiple_of(alignment));
+        fuzzer_utils::fuzzer_assert!(MAX_ALIGNMENT.is_multiple_of(alignment));
         let offset =
             (alignment - (self.records_buffer.get_ref().as_ptr() as usize % alignment)) % alignment;
         self.records_buffer.set_position(offset as u64);
@@ -677,8 +677,8 @@ where
         let aligned_core_size = (aligned_adapter_size + core_size)
             .next_multiple_of(adapter_alignment)
             - aligned_adapter_size;
-        debug_assert_eq!(MAX_ALIGNMENT % adapter_alignment, 0);
-        debug_assert_eq!(MAX_ALIGNMENT % core_alignment, 0);
+        fuzzer_utils::fuzzer_assert_eq!(MAX_ALIGNMENT % adapter_alignment, 0);
+        fuzzer_utils::fuzzer_assert_eq!(MAX_ALIGNMENT % core_alignment, 0);
         let buffer = self.alloc_bytes(aligned_adapter_size + aligned_core_size);
         // Doing an unchecked split here for perf
         // SAFETY:

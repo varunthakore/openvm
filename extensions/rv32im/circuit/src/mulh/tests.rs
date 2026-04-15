@@ -178,7 +178,7 @@ fn set_and_execute<RA: Arena, E: PreflightExecutor<F, RA>>(
     );
 
     let (a, _, _, _, _) = run_mulh::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(opcode, &b, &c);
-    assert_eq!(
+    fuzzer_utils::fuzzer_assert_eq!(
         a.map(F::from_u32),
         tester.read::<RV32_REGISTER_NUM_LIMBS>(1, rd)
     );
@@ -434,13 +434,13 @@ fn run_mulh_sanity_test() {
     let (res, res_mul, carry, x_ext, y_ext) =
         run_mulh::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(MULH, &x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(z[i], res[i]);
-        assert_eq!(z_mul[i], res_mul[i]);
-        assert_eq!(c[i], carry[i + RV32_REGISTER_NUM_LIMBS]);
-        assert_eq!(c_mul[i], carry[i]);
+        fuzzer_utils::fuzzer_assert_eq!(z[i], res[i]);
+        fuzzer_utils::fuzzer_assert_eq!(z_mul[i], res_mul[i]);
+        fuzzer_utils::fuzzer_assert_eq!(c[i], carry[i + RV32_REGISTER_NUM_LIMBS]);
+        fuzzer_utils::fuzzer_assert_eq!(c_mul[i], carry[i]);
     }
-    assert_eq!(x_ext, 0);
-    assert_eq!(y_ext, 255);
+    fuzzer_utils::fuzzer_assert_eq!(x_ext, 0);
+    fuzzer_utils::fuzzer_assert_eq!(y_ext, 255);
 }
 
 #[test]
@@ -454,13 +454,13 @@ fn run_mulhu_sanity_test() {
     let (res, res_mul, carry, x_ext, y_ext) =
         run_mulh::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(MULHU, &x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(z[i], res[i]);
-        assert_eq!(z_mul[i], res_mul[i]);
-        assert_eq!(c[i], carry[i + RV32_REGISTER_NUM_LIMBS]);
-        assert_eq!(c_mul[i], carry[i]);
+        fuzzer_utils::fuzzer_assert_eq!(z[i], res[i]);
+        fuzzer_utils::fuzzer_assert_eq!(z_mul[i], res_mul[i]);
+        fuzzer_utils::fuzzer_assert_eq!(c[i], carry[i + RV32_REGISTER_NUM_LIMBS]);
+        fuzzer_utils::fuzzer_assert_eq!(c_mul[i], carry[i]);
     }
-    assert_eq!(x_ext, 0);
-    assert_eq!(y_ext, 0);
+    fuzzer_utils::fuzzer_assert_eq!(x_ext, 0);
+    fuzzer_utils::fuzzer_assert_eq!(y_ext, 0);
 }
 
 #[test]
@@ -474,13 +474,13 @@ fn run_mulhsu_pos_sanity_test() {
     let (res, res_mul, carry, x_ext, y_ext) =
         run_mulh::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(MULHSU, &x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(z[i], res[i]);
-        assert_eq!(z_mul[i], res_mul[i]);
-        assert_eq!(c[i], carry[i + RV32_REGISTER_NUM_LIMBS]);
-        assert_eq!(c_mul[i], carry[i]);
+        fuzzer_utils::fuzzer_assert_eq!(z[i], res[i]);
+        fuzzer_utils::fuzzer_assert_eq!(z_mul[i], res_mul[i]);
+        fuzzer_utils::fuzzer_assert_eq!(c[i], carry[i + RV32_REGISTER_NUM_LIMBS]);
+        fuzzer_utils::fuzzer_assert_eq!(c_mul[i], carry[i]);
     }
-    assert_eq!(x_ext, 0);
-    assert_eq!(y_ext, 0);
+    fuzzer_utils::fuzzer_assert_eq!(x_ext, 0);
+    fuzzer_utils::fuzzer_assert_eq!(y_ext, 0);
 }
 
 #[test]
@@ -494,13 +494,13 @@ fn run_mulhsu_neg_sanity_test() {
     let (res, res_mul, carry, x_ext, y_ext) =
         run_mulh::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(MULHSU, &x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(z[i], res[i]);
-        assert_eq!(z_mul[i], res_mul[i]);
-        assert_eq!(c[i], carry[i + RV32_REGISTER_NUM_LIMBS]);
-        assert_eq!(c_mul[i], carry[i]);
+        fuzzer_utils::fuzzer_assert_eq!(z[i], res[i]);
+        fuzzer_utils::fuzzer_assert_eq!(z_mul[i], res_mul[i]);
+        fuzzer_utils::fuzzer_assert_eq!(c[i], carry[i + RV32_REGISTER_NUM_LIMBS]);
+        fuzzer_utils::fuzzer_assert_eq!(c_mul[i], carry[i]);
     }
-    assert_eq!(x_ext, 255);
-    assert_eq!(y_ext, 0);
+    fuzzer_utils::fuzzer_assert_eq!(x_ext, 255);
+    fuzzer_utils::fuzzer_assert_eq!(y_ext, 0);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -527,12 +527,12 @@ fn run_mul_program(instructions: Vec<Instruction<F>>) -> (VmState<F>, VmState<F>
         .execute(vec![], None)
         .expect("AOT execution must succeed");
 
-    assert_eq!(interp_state.pc(), aot_state.pc());
+    fuzzer_utils::fuzzer_assert_eq!(interp_state.pc(), aot_state.pc());
 
     let hasher = vm_poseidon2_hasher::<BabyBear>();
     let tree1 = MerkleTree::from_memory(&interp_state.memory.memory, &memory_dimensions, &hasher);
     let tree2 = MerkleTree::from_memory(&aot_state.memory.memory, &memory_dimensions, &hasher);
-    assert_eq!(tree1.root(), tree2.root(), "Memory states differ");
+    fuzzer_utils::fuzzer_assert_eq!(tree1.root(), tree2.root(), "Memory states differ");
 
     // Also test metered execution (interpreter and AOT) produce identical final state
     let engine = BabyBearPoseidon2CpuEngine::<DuplexSponge>::new(SystemParams::new_for_testing(20));
@@ -561,7 +561,7 @@ fn run_mul_program(instructions: Vec<Instruction<F>>) -> (VmState<F>, VmState<F>
         interp_state.pc(),
         metered_interp_state.pc()
     );
-    assert_eq!(metered_aot_state.pc(), metered_interp_state.pc());
+    fuzzer_utils::fuzzer_assert_eq!(metered_aot_state.pc(), metered_interp_state.pc());
     let tree_mi = MerkleTree::from_memory(
         &metered_interp_state.memory.memory,
         &memory_dimensions,
@@ -573,7 +573,7 @@ fn run_mul_program(instructions: Vec<Instruction<F>>) -> (VmState<F>, VmState<F>
         &hasher,
     );
 
-    assert_eq!(
+    fuzzer_utils::fuzzer_assert_eq!(
         tree_ma.root(),
         tree_mi.root(),
         "Metered interpreter memory differs"
@@ -652,16 +652,16 @@ fn test_aot_mulh_variants_basic() {
     let (interp_state, aot_state) = run_mul_program(instructions);
 
     let x3 = read_register(&interp_state, 12);
-    assert_eq!(x3, mulh_signed(1234, 200));
-    assert_eq!(x3, read_register(&aot_state, 12));
+    fuzzer_utils::fuzzer_assert_eq!(x3, mulh_signed(1234, 200));
+    fuzzer_utils::fuzzer_assert_eq!(x3, read_register(&aot_state, 12));
 
     let x6 = read_register(&interp_state, 24);
-    assert_eq!(x6, mulh_signed_unsigned(800, 12345));
-    assert_eq!(x6, read_register(&aot_state, 24));
+    fuzzer_utils::fuzzer_assert_eq!(x6, mulh_signed_unsigned(800, 12345));
+    fuzzer_utils::fuzzer_assert_eq!(x6, read_register(&aot_state, 24));
 
     let x9 = read_register(&interp_state, 36);
-    assert_eq!(x9, mulh_unsigned(1200, 200));
-    assert_eq!(x9, read_register(&aot_state, 36));
+    fuzzer_utils::fuzzer_assert_eq!(x9, mulh_unsigned(1200, 200));
+    fuzzer_utils::fuzzer_assert_eq!(x9, read_register(&aot_state, 36));
 }
 
 #[cfg(feature = "aot")]
@@ -679,8 +679,8 @@ fn test_aot_mulh_upper_lane() {
     let expected = mulh_signed(0x0000_000F, 0x0000_0002);
     let interp_val = read_register(&interp_state, 16);
     let aot_val = read_register(&aot_state, 16);
-    assert_eq!(interp_val, expected);
-    assert_eq!(interp_val, aot_val);
+    fuzzer_utils::fuzzer_assert_eq!(interp_val, expected);
+    fuzzer_utils::fuzzer_assert_eq!(interp_val, aot_val);
 }
 
 #[cfg(feature = "aot")]
@@ -732,11 +732,11 @@ fn test_aot_mulh_randomized() {
     for (offset, expected_val) in expected {
         let interp_val = read_register(&interp_state, offset);
         let aot_val = read_register(&aot_state, offset);
-        assert_eq!(
+        fuzzer_utils::fuzzer_assert_eq!(
             interp_val, expected_val,
             "unexpected value at offset {offset}"
         );
-        assert_eq!(interp_val, aot_val, "AOT mismatch at offset {offset}");
+        fuzzer_utils::fuzzer_assert_eq!(interp_val, aot_val, "AOT mismatch at offset {offset}");
     }
 }
 

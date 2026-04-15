@@ -257,7 +257,7 @@ where
             let mut height = (2 * self.touched_labels.len()).next_power_of_two();
             if let Some(mut oh) = self.overridden_height {
                 oh = oh.next_power_of_two();
-                assert!(
+                fuzzer_utils::fuzzer_assert!(
                     oh >= height,
                     "Overridden height is less than the required height"
                 );

@@ -93,7 +93,7 @@ impl Chip<Vec<u32>, GpuBackend> for ProgramChipGPU {
         let cached = self.cached.clone().expect("Cached program must be loaded");
         let height = cached.height();
         let filtered_len = filtered_exec_freqs.len();
-        assert!(
+        fuzzer_utils::fuzzer_assert!(
             filtered_len <= height,
             "filtered_exec_freqs len={filtered_len} > cached trace height={height}"
         );
@@ -155,7 +155,7 @@ mod tests {
 
         // NOTE: This compares the stacked matrices, not the original cached trace
         assert_eq_host_and_device_matrix_col_maj(&cpu_cached.trace, &gpu_cached.trace);
-        assert_eq!(gpu_cached.commitment, cpu_cached.commitment);
+        fuzzer_utils::fuzzer_assert_eq!(gpu_cached.commitment, cpu_cached.commitment);
     }
 
     #[test]

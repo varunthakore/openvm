@@ -161,9 +161,9 @@ fn set_and_execute<RA: Arena, E: PreflightExecutor<F, RA>>(
 
     let write_data = run_write_data_sign_extend(opcode, read_data, shift_amount as usize);
     if a != 0 {
-        assert_eq!(write_data.map(F::from_u8), tester.read::<4>(1, a));
+        fuzzer_utils::fuzzer_assert_eq!(write_data.map(F::from_u8), tester.read::<4>(1, a));
     } else {
-        assert_eq!([F::ZERO; 4], tester.read::<4>(1, a));
+        fuzzer_utils::fuzzer_assert_eq!([F::ZERO; 4], tester.read::<4>(1, a));
     }
 }
 
@@ -322,8 +322,8 @@ fn solve_loadh_extend_sign_sanity_test() {
     let write_data0 = run_write_data_sign_extend::<RV32_REGISTER_NUM_LIMBS>(LOADH, read_data, 0);
     let write_data2 = run_write_data_sign_extend::<RV32_REGISTER_NUM_LIMBS>(LOADH, read_data, 2);
 
-    assert_eq!(write_data0, [34, 159, 255, 255]);
-    assert_eq!(write_data2, [237, 151, 255, 255]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data0, [34, 159, 255, 255]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data2, [237, 151, 255, 255]);
 }
 
 #[test]
@@ -332,8 +332,8 @@ fn solve_loadh_extend_zero_sanity_test() {
     let write_data0 = run_write_data_sign_extend::<RV32_REGISTER_NUM_LIMBS>(LOADH, read_data, 0);
     let write_data2 = run_write_data_sign_extend::<RV32_REGISTER_NUM_LIMBS>(LOADH, read_data, 2);
 
-    assert_eq!(write_data0, [34, 121, 0, 0]);
-    assert_eq!(write_data2, [237, 97, 0, 0]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data0, [34, 121, 0, 0]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data2, [237, 97, 0, 0]);
 }
 
 #[test]
@@ -344,10 +344,10 @@ fn solve_loadb_extend_sign_sanity_test() {
     let write_data2 = run_write_data_sign_extend::<RV32_REGISTER_NUM_LIMBS>(LOADB, read_data, 2);
     let write_data3 = run_write_data_sign_extend::<RV32_REGISTER_NUM_LIMBS>(LOADB, read_data, 3);
 
-    assert_eq!(write_data0, [45, 0, 0, 0]);
-    assert_eq!(write_data1, [82, 0, 0, 0]);
-    assert_eq!(write_data2, [99, 0, 0, 0]);
-    assert_eq!(write_data3, [127, 0, 0, 0]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data0, [45, 0, 0, 0]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data1, [82, 0, 0, 0]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data2, [99, 0, 0, 0]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data3, [127, 0, 0, 0]);
 }
 
 #[test]
@@ -358,10 +358,10 @@ fn solve_loadb_extend_zero_sanity_test() {
     let write_data2 = run_write_data_sign_extend::<RV32_REGISTER_NUM_LIMBS>(LOADB, read_data, 2);
     let write_data3 = run_write_data_sign_extend::<RV32_REGISTER_NUM_LIMBS>(LOADB, read_data, 3);
 
-    assert_eq!(write_data0, [173, 255, 255, 255]);
-    assert_eq!(write_data1, [210, 255, 255, 255]);
-    assert_eq!(write_data2, [227, 255, 255, 255]);
-    assert_eq!(write_data3, [255, 255, 255, 255]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data0, [173, 255, 255, 255]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data1, [210, 255, 255, 255]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data2, [227, 255, 255, 255]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data3, [255, 255, 255, 255]);
 }
 
 // ////////////////////////////////////////////////////////////////////////////////////

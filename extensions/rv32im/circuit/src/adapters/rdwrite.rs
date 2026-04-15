@@ -237,7 +237,7 @@ where
     ) {
         let &Instruction { a, d, .. } = instruction;
 
-        debug_assert_eq!(d.as_canonical_u32(), RV32_REGISTER_AS);
+        fuzzer_utils::fuzzer_assert_eq!(d.as_canonical_u32(), RV32_REGISTER_AS);
 
         record.rd_ptr = a.as_canonical_u32();
         tracing_write(

@@ -48,8 +48,8 @@ impl<const CHUNK: usize, F: PrimeField32> MemoryMerkleChip<CHUNK, F> {
         merkle_bus: PermutationCheckBus,
         compression_bus: PermutationCheckBus,
     ) -> Self {
-        assert!(memory_dimensions.addr_space_height > 0);
-        assert!(memory_dimensions.address_height > 0);
+        fuzzer_utils::fuzzer_assert!(memory_dimensions.addr_space_height > 0);
+        fuzzer_utils::fuzzer_assert!(memory_dimensions.address_height > 0);
         Self {
             air: MemoryMerkleAir {
                 memory_dimensions,
@@ -79,7 +79,7 @@ fn memory_to_vec_partition<F: PrimeField32, const N: usize>(
             let space_mem = memory.mem[as_idx].as_slice();
             let addr_space_layout = memory.config[as_idx].layout;
             let cell_size = addr_space_layout.size();
-            debug_assert_eq!(PAGE_SIZE % (cell_size * N), 0);
+            fuzzer_utils::fuzzer_assert_eq!(PAGE_SIZE % (cell_size * N), 0);
 
             let num_nonzero_pages = space_mem
                 .par_chunks(PAGE_SIZE)

@@ -89,7 +89,7 @@ impl VmConnectorAir {
         range_bus: VariableRangeCheckerBus,
         timestamp_max_bits: usize,
     ) -> Self {
-        assert!(
+        fuzzer_utils::fuzzer_assert!(
             range_bus.range_max_bits * 2 >= timestamp_max_bits,
             "Range checker not large enough: range_max_bits={}, timestamp_max_bits={}",
             range_bus.range_max_bits,
@@ -231,7 +231,7 @@ pub struct VmConnectorChip<F> {
 impl<F> VmConnectorChip<F> {
     pub fn new(range_checker: SharedVariableRangeCheckerChip, timestamp_max_bits: usize) -> Self {
         let range_bus = range_checker.bus();
-        assert!(
+        fuzzer_utils::fuzzer_assert!(
             range_bus.range_max_bits * 2 >= timestamp_max_bits,
             "Range checker not large enough: range_max_bits={}, timestamp_max_bits={}",
             range_bus.range_max_bits,

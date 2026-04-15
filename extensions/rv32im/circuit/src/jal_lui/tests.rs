@@ -139,8 +139,8 @@ fn set_and_execute<RA: Arena, E: PreflightExecutor<F, RA>>(
     let (next_pc, rd_data) = run_jal_lui(opcode == JAL, initial_pc, imm);
     let rd_data = if needs_write { rd_data } else { [0; 4] };
 
-    assert_eq!(next_pc, final_pc);
-    assert_eq!(rd_data.map(F::from_u8), tester.read::<4>(1, a));
+    fuzzer_utils::fuzzer_assert_eq!(next_pc, final_pc);
+    fuzzer_utils::fuzzer_assert_eq!(rd_data.map(F::from_u8), tester.read::<4>(1, a));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -383,8 +383,8 @@ fn run_jal_sanity_test() {
     let initial_pc = 28120;
     let imm = -2048;
     let (next_pc, rd_data) = run_jal_lui(true, initial_pc, imm);
-    assert_eq!(next_pc, 26072);
-    assert_eq!(rd_data, [220, 109, 0, 0]);
+    fuzzer_utils::fuzzer_assert_eq!(next_pc, 26072);
+    fuzzer_utils::fuzzer_assert_eq!(rd_data, [220, 109, 0, 0]);
 }
 
 #[test]
@@ -392,15 +392,15 @@ fn run_lui_sanity_test() {
     let initial_pc = 456789120;
     let imm = 853679;
     let (next_pc, rd_data) = run_jal_lui(false, initial_pc, imm);
-    assert_eq!(next_pc, 456789124);
-    assert_eq!(rd_data, [0, 240, 106, 208]);
+    fuzzer_utils::fuzzer_assert_eq!(next_pc, 456789124);
+    fuzzer_utils::fuzzer_assert_eq!(rd_data, [0, 240, 106, 208]);
 }
 
 #[test]
 fn test_additional_bits() {
     let last_limb_bits = PC_BITS - RV32_CELL_BITS * (RV32_REGISTER_NUM_LIMBS - 1);
     let additional_bits = (last_limb_bits..RV32_CELL_BITS).fold(0, |acc, x| acc + (1u32 << x));
-    assert_eq!(additional_bits, ADDITIONAL_BITS);
+    fuzzer_utils::fuzzer_assert_eq!(additional_bits, ADDITIONAL_BITS);
 }
 
 // ////////////////////////////////////////////////////////////////////////////////////

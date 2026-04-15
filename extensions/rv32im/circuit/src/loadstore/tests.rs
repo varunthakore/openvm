@@ -183,12 +183,12 @@ fn set_and_execute<RA: Arena, E: PreflightExecutor<F, RA>>(
     .map(F::from_u32);
     if is_load {
         if enabled_write {
-            assert_eq!(write_data, tester.read::<4>(1, a));
+            fuzzer_utils::fuzzer_assert_eq!(write_data, tester.read::<4>(1, a));
         } else {
-            assert_eq!([F::ZERO; RV32_REGISTER_NUM_LIMBS], tester.read::<4>(1, a));
+            fuzzer_utils::fuzzer_assert_eq!([F::ZERO; RV32_REGISTER_NUM_LIMBS], tester.read::<4>(1, a));
         }
     } else {
-        assert_eq!(
+        fuzzer_utils::fuzzer_assert_eq!(
             write_data,
             tester.read::<4>(mem_as, (ptr_val - shift_amount) as usize)
         );
@@ -437,8 +437,8 @@ fn run_loadw_storew_sanity_test() {
     let prev_data = [159, 213, 89, 34];
     let store_write_data = run_write_data(STOREW, read_data, prev_data, 0);
     let load_write_data = run_write_data(LOADW, read_data, prev_data, 0);
-    assert_eq!(store_write_data, read_data.map(u32::from));
-    assert_eq!(load_write_data, read_data.map(u32::from));
+    fuzzer_utils::fuzzer_assert_eq!(store_write_data, read_data.map(u32::from));
+    fuzzer_utils::fuzzer_assert_eq!(load_write_data, read_data.map(u32::from));
 }
 
 #[test]
@@ -447,8 +447,8 @@ fn run_storeh_sanity_test() {
     let prev_data = [144, 56, 175, 92];
     let write_data = run_write_data(STOREH, read_data, prev_data, 0);
     let write_data2 = run_write_data(STOREH, read_data, prev_data, 2);
-    assert_eq!(write_data, [250, 123, 175, 92]);
-    assert_eq!(write_data2, [144, 56, 250, 123]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data, [250, 123, 175, 92]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data2, [144, 56, 250, 123]);
 }
 
 #[test]
@@ -459,10 +459,10 @@ fn run_storeb_sanity_test() {
     let write_data1 = run_write_data(STOREB, read_data, prev_data, 1);
     let write_data2 = run_write_data(STOREB, read_data, prev_data, 2);
     let write_data3 = run_write_data(STOREB, read_data, prev_data, 3);
-    assert_eq!(write_data, [221, 83, 243, 12]);
-    assert_eq!(write_data1, [199, 221, 243, 12]);
-    assert_eq!(write_data2, [199, 83, 221, 12]);
-    assert_eq!(write_data3, [199, 83, 243, 221]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data, [221, 83, 243, 12]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data1, [199, 221, 243, 12]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data2, [199, 83, 221, 12]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data3, [199, 83, 243, 221]);
 }
 
 #[test]
@@ -471,8 +471,8 @@ fn run_loadhu_sanity_test() {
     let prev_data = [90, 121, 64, 205];
     let write_data = run_write_data(LOADHU, read_data, prev_data, 0);
     let write_data2 = run_write_data(LOADHU, read_data, prev_data, 2);
-    assert_eq!(write_data, [175, 33, 0, 0]);
-    assert_eq!(write_data2, [198, 250, 0, 0]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data, [175, 33, 0, 0]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data2, [198, 250, 0, 0]);
 }
 
 #[test]
@@ -483,10 +483,10 @@ fn run_loadbu_sanity_test() {
     let write_data1 = run_write_data(LOADBU, read_data, prev_data, 1);
     let write_data2 = run_write_data(LOADBU, read_data, prev_data, 2);
     let write_data3 = run_write_data(LOADBU, read_data, prev_data, 3);
-    assert_eq!(write_data, [131, 0, 0, 0]);
-    assert_eq!(write_data1, [74, 0, 0, 0]);
-    assert_eq!(write_data2, [186, 0, 0, 0]);
-    assert_eq!(write_data3, [29, 0, 0, 0]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data, [131, 0, 0, 0]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data1, [74, 0, 0, 0]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data2, [186, 0, 0, 0]);
+    fuzzer_utils::fuzzer_assert_eq!(write_data3, [29, 0, 0, 0]);
 }
 
 // ////////////////////////////////////////////////////////////////////////////////////

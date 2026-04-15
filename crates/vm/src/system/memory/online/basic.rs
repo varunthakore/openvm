@@ -139,7 +139,7 @@ impl LinearMemory for BasicMemory {
     #[inline(always)]
     unsafe fn read<BLOCK: Copy>(&self, from: usize) -> BLOCK {
         let size = std::mem::size_of::<BLOCK>();
-        assert!(
+        fuzzer_utils::fuzzer_assert!(
             from + size <= self.size,
             "read from={from} of size={size} out of bounds: memory size={}",
             self.size
@@ -157,7 +157,7 @@ impl LinearMemory for BasicMemory {
     #[inline(always)]
     unsafe fn read_unaligned<BLOCK: Copy>(&self, from: usize) -> BLOCK {
         let size = std::mem::size_of::<BLOCK>();
-        assert!(
+        fuzzer_utils::fuzzer_assert!(
             from + size <= self.size,
             "read_unaligned from={from} of size={size} out of bounds: memory size={}",
             self.size
@@ -174,7 +174,7 @@ impl LinearMemory for BasicMemory {
     #[inline(always)]
     unsafe fn write<BLOCK: Copy>(&mut self, start: usize, values: BLOCK) {
         let size = std::mem::size_of::<BLOCK>();
-        assert!(
+        fuzzer_utils::fuzzer_assert!(
             start + size <= self.size,
             "write start={start} of size={size} out of bounds: memory size={}",
             self.size
@@ -190,7 +190,7 @@ impl LinearMemory for BasicMemory {
     #[inline(always)]
     unsafe fn write_unaligned<BLOCK: Copy>(&mut self, start: usize, values: BLOCK) {
         let size = std::mem::size_of::<BLOCK>();
-        assert!(
+        fuzzer_utils::fuzzer_assert!(
             start + size <= self.size,
             "write_unaligned start={start} of size={size} out of bounds: memory size={}",
             self.size
@@ -204,7 +204,7 @@ impl LinearMemory for BasicMemory {
     #[inline(always)]
     unsafe fn swap<BLOCK: Copy>(&mut self, start: usize, values: &mut BLOCK) {
         let size = std::mem::size_of::<BLOCK>();
-        assert!(
+        fuzzer_utils::fuzzer_assert!(
             start + size <= self.size,
             "swap start={start} of size={size} out of bounds: memory size={}",
             self.size
@@ -222,7 +222,7 @@ impl LinearMemory for BasicMemory {
     #[inline(always)]
     unsafe fn copy_nonoverlapping<T: Copy>(&mut self, to: usize, data: &[T]) {
         let byte_len = std::mem::size_of_val(data);
-        assert!(
+        fuzzer_utils::fuzzer_assert!(
             to + byte_len <= self.size,
             "copy_nonoverlapping to={to} of size={byte_len} out of bounds: memory size={}",
             self.size
@@ -236,12 +236,12 @@ impl LinearMemory for BasicMemory {
     #[inline(always)]
     unsafe fn get_aligned_slice<T: Copy>(&self, start: usize, len: usize) -> &[T] {
         let byte_len = len * std::mem::size_of::<T>();
-        assert!(
+        fuzzer_utils::fuzzer_assert!(
             start + byte_len <= self.size,
             "get_aligned_slice start={start} of size={byte_len} out of bounds: memory size={}",
             self.size
         );
-        assert!(
+        fuzzer_utils::fuzzer_assert!(
             start.is_multiple_of(std::mem::align_of::<T>()),
             "get_aligned_slice: misaligned start"
         );

@@ -208,7 +208,7 @@ unsafe fn execute_e12_impl<
             1 << POINTER_MAX_BITS
         );
     }
-    debug_assert!(ptr_val < (1 << POINTER_MAX_BITS));
+    fuzzer_utils::fuzzer_assert!(ptr_val < (1 << POINTER_MAX_BITS));
 
     let shift_amount = ptr_val % 4;
     let ptr_val = ptr_val - shift_amount; // aligned ptr

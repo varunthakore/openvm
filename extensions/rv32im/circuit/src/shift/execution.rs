@@ -132,8 +132,8 @@ where
         let b: i16 = to_i16(inst.b);
         let c: i16 = to_i16(inst.c);
         let e: i16 = to_i16(inst.e);
-        assert!(a % 4 == 0, "instruction.a must be a multiple of 4");
-        assert!(b % 4 == 0, "instruction.b must be a multiple of 4");
+        fuzzer_utils::fuzzer_assert!(a % 4 == 0, "instruction.a must be a multiple of 4");
+        fuzzer_utils::fuzzer_assert!(b % 4 == 0, "instruction.b must be a multiple of 4");
 
         // note: for shift we will use REG_B since
         // it is a hardware requirement that cl is used as the shift value

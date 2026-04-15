@@ -207,7 +207,7 @@ where
         state: VmStateMut<F, TracingMemory, RA>,
         instruction: &Instruction<F>,
     ) -> Result<(), ExecutionError> {
-        debug_assert!(LIMB_BITS <= 8);
+        fuzzer_utils::fuzzer_assert!(LIMB_BITS <= 8);
         let Instruction { opcode, .. } = instruction;
 
         let (mut adapter_record, core_record) = state.ctx.alloc(EmptyAdapterCoreLayout::new());

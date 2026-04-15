@@ -113,7 +113,7 @@ fn test_no_adapter_records_for_singleton_accesses<T: Copy + Debug, const BLOCK_S
             }
         }
     }
-    assert!(memory.access_adapter_records.allocated().is_empty());
+    fuzzer_utils::fuzzer_assert!(memory.access_adapter_records.allocated().is_empty());
 }
 
 #[test]

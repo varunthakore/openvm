@@ -70,7 +70,7 @@ fn limb_sra<const NUM_LIMBS: usize, const LIMB_BITS: usize>(
     x: [u32; NUM_LIMBS],
     shift: usize,
 ) -> [u32; NUM_LIMBS] {
-    assert!(shift < NUM_LIMBS);
+    fuzzer_utils::fuzzer_assert!(shift < NUM_LIMBS);
     let ext = (x[NUM_LIMBS - 1] >> (LIMB_BITS - 1)) * ((1 << LIMB_BITS) - 1);
     array::from_fn(|i| if i + shift < NUM_LIMBS { x[i] } else { ext })
 }
@@ -175,7 +175,7 @@ fn set_and_execute<RA: Arena, E: PreflightExecutor<F, RA>>(
         &Instruction::from_usize(opcode.global_opcode(), [rd, rs1, rs2, 1, 0]),
     );
 
-    assert_eq!(
+    fuzzer_utils::fuzzer_assert_eq!(
         (if is_div { q } else { r }).map(F::from_u32),
         tester.read::<RV32_REGISTER_NUM_LIMBS>(1, rd)
     );
@@ -608,13 +608,13 @@ fn run_divrem_unsigned_sanity_test() {
     let (res_q, res_r, x_sign, y_sign, q_sign, case) =
         run_divrem::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(false, &x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(q[i], res_q[i]);
-        assert_eq!(r[i], res_r[i]);
+        fuzzer_utils::fuzzer_assert_eq!(q[i], res_q[i]);
+        fuzzer_utils::fuzzer_assert_eq!(r[i], res_r[i]);
     }
-    assert!(!x_sign);
-    assert!(!y_sign);
-    assert!(!q_sign);
-    assert_eq!(case, DivRemCoreSpecialCase::None);
+    fuzzer_utils::fuzzer_assert!(!x_sign);
+    fuzzer_utils::fuzzer_assert!(!y_sign);
+    fuzzer_utils::fuzzer_assert!(!q_sign);
+    fuzzer_utils::fuzzer_assert_eq!(case, DivRemCoreSpecialCase::None);
 }
 
 #[test]
@@ -626,13 +626,13 @@ fn run_divrem_unsigned_zero_divisor_test() {
     let (res_q, res_r, x_sign, y_sign, q_sign, case) =
         run_divrem::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(false, &x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(q[i], res_q[i]);
-        assert_eq!(x[i], res_r[i]);
+        fuzzer_utils::fuzzer_assert_eq!(q[i], res_q[i]);
+        fuzzer_utils::fuzzer_assert_eq!(x[i], res_r[i]);
     }
-    assert!(!x_sign);
-    assert!(!y_sign);
-    assert!(!q_sign);
-    assert_eq!(case, DivRemCoreSpecialCase::ZeroDivisor);
+    fuzzer_utils::fuzzer_assert!(!x_sign);
+    fuzzer_utils::fuzzer_assert!(!y_sign);
+    fuzzer_utils::fuzzer_assert!(!q_sign);
+    fuzzer_utils::fuzzer_assert_eq!(case, DivRemCoreSpecialCase::ZeroDivisor);
 }
 
 #[test]
@@ -645,13 +645,13 @@ fn run_divrem_signed_sanity_test() {
     let (res_q, res_r, x_sign, y_sign, q_sign, case) =
         run_divrem::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(true, &x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(q[i], res_q[i]);
-        assert_eq!(r[i], res_r[i]);
+        fuzzer_utils::fuzzer_assert_eq!(q[i], res_q[i]);
+        fuzzer_utils::fuzzer_assert_eq!(r[i], res_r[i]);
     }
-    assert!(x_sign);
-    assert!(!y_sign);
-    assert!(q_sign);
-    assert_eq!(case, DivRemCoreSpecialCase::None);
+    fuzzer_utils::fuzzer_assert!(x_sign);
+    fuzzer_utils::fuzzer_assert!(!y_sign);
+    fuzzer_utils::fuzzer_assert!(q_sign);
+    fuzzer_utils::fuzzer_assert_eq!(case, DivRemCoreSpecialCase::None);
 }
 
 #[test]
@@ -663,13 +663,13 @@ fn run_divrem_signed_zero_divisor_test() {
     let (res_q, res_r, x_sign, y_sign, q_sign, case) =
         run_divrem::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(true, &x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(q[i], res_q[i]);
-        assert_eq!(x[i], res_r[i]);
+        fuzzer_utils::fuzzer_assert_eq!(q[i], res_q[i]);
+        fuzzer_utils::fuzzer_assert_eq!(x[i], res_r[i]);
     }
-    assert!(x_sign);
-    assert!(!y_sign);
-    assert!(q_sign);
-    assert_eq!(case, DivRemCoreSpecialCase::ZeroDivisor);
+    fuzzer_utils::fuzzer_assert!(x_sign);
+    fuzzer_utils::fuzzer_assert!(!y_sign);
+    fuzzer_utils::fuzzer_assert!(q_sign);
+    fuzzer_utils::fuzzer_assert_eq!(case, DivRemCoreSpecialCase::ZeroDivisor);
 }
 
 #[test]
@@ -681,13 +681,13 @@ fn run_divrem_signed_overflow_test() {
     let (res_q, res_r, x_sign, y_sign, q_sign, case) =
         run_divrem::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(true, &x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(x[i], res_q[i]);
-        assert_eq!(r[i], res_r[i]);
+        fuzzer_utils::fuzzer_assert_eq!(x[i], res_q[i]);
+        fuzzer_utils::fuzzer_assert_eq!(r[i], res_r[i]);
     }
-    assert!(x_sign);
-    assert!(y_sign);
-    assert!(!q_sign);
-    assert_eq!(case, DivRemCoreSpecialCase::SignedOverflow);
+    fuzzer_utils::fuzzer_assert!(x_sign);
+    fuzzer_utils::fuzzer_assert!(y_sign);
+    fuzzer_utils::fuzzer_assert!(!q_sign);
+    fuzzer_utils::fuzzer_assert_eq!(case, DivRemCoreSpecialCase::SignedOverflow);
 }
 
 #[test]
@@ -700,13 +700,13 @@ fn run_divrem_signed_min_dividend_test() {
     let (res_q, res_r, x_sign, y_sign, q_sign, case) =
         run_divrem::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(true, &x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(q[i], res_q[i]);
-        assert_eq!(r[i], res_r[i]);
+        fuzzer_utils::fuzzer_assert_eq!(q[i], res_q[i]);
+        fuzzer_utils::fuzzer_assert_eq!(r[i], res_r[i]);
     }
-    assert!(x_sign);
-    assert!(y_sign);
-    assert!(!q_sign);
-    assert_eq!(case, DivRemCoreSpecialCase::None);
+    fuzzer_utils::fuzzer_assert!(x_sign);
+    fuzzer_utils::fuzzer_assert!(y_sign);
+    fuzzer_utils::fuzzer_assert!(!q_sign);
+    fuzzer_utils::fuzzer_assert_eq!(case, DivRemCoreSpecialCase::None);
 }
 
 #[test]
@@ -718,22 +718,22 @@ fn run_divrem_zero_quotient_test() {
     let (res_q, res_r, x_sign, y_sign, q_sign, case) =
         run_divrem::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(true, &x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(q[i], res_q[i]);
-        assert_eq!(x[i], res_r[i]);
+        fuzzer_utils::fuzzer_assert_eq!(q[i], res_q[i]);
+        fuzzer_utils::fuzzer_assert_eq!(x[i], res_r[i]);
     }
-    assert!(x_sign);
-    assert!(!y_sign);
-    assert!(!q_sign);
-    assert_eq!(case, DivRemCoreSpecialCase::None);
+    fuzzer_utils::fuzzer_assert!(x_sign);
+    fuzzer_utils::fuzzer_assert!(!y_sign);
+    fuzzer_utils::fuzzer_assert!(!q_sign);
+    fuzzer_utils::fuzzer_assert_eq!(case, DivRemCoreSpecialCase::None);
 }
 
 #[test]
 fn run_sltu_diff_idx_test() {
     let x: [u32; RV32_REGISTER_NUM_LIMBS] = [123, 34, 254, 67];
     let y: [u32; RV32_REGISTER_NUM_LIMBS] = [123, 34, 255, 67];
-    assert_eq!(run_sltu_diff_idx(&x, &y, true), 2);
-    assert_eq!(run_sltu_diff_idx(&y, &x, false), 2);
-    assert_eq!(run_sltu_diff_idx(&x, &x, false), RV32_REGISTER_NUM_LIMBS);
+    fuzzer_utils::fuzzer_assert_eq!(run_sltu_diff_idx(&x, &y, true), 2);
+    fuzzer_utils::fuzzer_assert_eq!(run_sltu_diff_idx(&y, &x, false), 2);
+    fuzzer_utils::fuzzer_assert_eq!(run_sltu_diff_idx(&x, &x, false), RV32_REGISTER_NUM_LIMBS);
 }
 
 #[test]
@@ -744,7 +744,7 @@ fn run_mul_carries_signed_sanity_test() {
     let c = [40, 101, 126, 206, 304, 376, 450, 464];
     let carry = run_mul_carries::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(true, &d, &q, &r, true);
     for (expected_c, actual_c) in c.iter().zip(carry.iter()) {
-        assert_eq!(*expected_c, *actual_c)
+        fuzzer_utils::fuzzer_assert_eq!(*expected_c, *actual_c)
     }
 }
 
@@ -756,7 +756,7 @@ fn run_mul_unsigned_sanity_test() {
     let c = [40, 101, 126, 206, 107, 93, 18, 0];
     let carry = run_mul_carries::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(false, &d, &q, &r, true);
     for (expected_c, actual_c) in c.iter().zip(carry.iter()) {
-        assert_eq!(*expected_c, *actual_c)
+        fuzzer_utils::fuzzer_assert_eq!(*expected_c, *actual_c)
     }
 }
 

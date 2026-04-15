@@ -263,7 +263,7 @@ pub struct ShiftFiller<A, const NUM_LIMBS: usize, const LIMB_BITS: usize> {
 
 impl<A, const NUM_LIMBS: usize, const LIMB_BITS: usize> ShiftExecutor<A, NUM_LIMBS, LIMB_BITS> {
     pub fn new(adapter: A, offset: usize) -> Self {
-        assert_eq!(NUM_LIMBS % 2, 0, "Number of limbs must be divisible by 2");
+        fuzzer_utils::fuzzer_assert_eq!(NUM_LIMBS % 2, 0, "Number of limbs must be divisible by 2");
         Self { adapter, offset }
     }
 }
@@ -275,7 +275,7 @@ impl<A, const NUM_LIMBS: usize, const LIMB_BITS: usize> ShiftFiller<A, NUM_LIMBS
         range_checker_chip: SharedVariableRangeCheckerChip,
         offset: usize,
     ) -> Self {
-        assert_eq!(NUM_LIMBS % 2, 0, "Number of limbs must be divisible by 2");
+        fuzzer_utils::fuzzer_assert_eq!(NUM_LIMBS % 2, 0, "Number of limbs must be divisible by 2");
         Self {
             adapter,
             offset,
@@ -490,7 +490,7 @@ fn run_shift_right<const NUM_LIMBS: usize, const LIMB_BITS: usize>(
 
 #[inline(always)]
 fn get_shift<const NUM_LIMBS: usize, const LIMB_BITS: usize>(y: &[u8]) -> (usize, usize) {
-    debug_assert!(NUM_LIMBS * LIMB_BITS <= (1 << LIMB_BITS));
+    fuzzer_utils::fuzzer_assert!(NUM_LIMBS * LIMB_BITS <= (1 << LIMB_BITS));
     // We assume `NUM_LIMBS * LIMB_BITS <= 2^LIMB_BITS` so the shift is defined
     // entirely in y[0].
     let shift = (y[0] as usize) % (NUM_LIMBS * LIMB_BITS);

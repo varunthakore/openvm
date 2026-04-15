@@ -58,9 +58,9 @@ fn test(
                     != final_memory.get_f(address_space as u32, pointer as u32)
             } {
                 let label = (pointer / CHUNK) as u32;
-                assert!(address_space - (ADDR_SPACE_OFFSET as usize) < (1 << addr_space_height));
-                assert!(pointer < (CHUNK << address_height));
-                assert!(touched_labels.contains(&(address_space as u32, label)));
+                fuzzer_utils::fuzzer_assert!(address_space - (ADDR_SPACE_OFFSET as usize) < (1 << addr_space_height));
+                fuzzer_utils::fuzzer_assert!(pointer < (CHUNK << address_height));
+                fuzzer_utils::fuzzer_assert!(touched_labels.contains(&(address_space as u32, label)));
             }
         }
     }
@@ -90,7 +90,7 @@ fn test(
         .collect();
     chip.finalize(initial_memory, &final_partition, &hash_test_chip);
 
-    assert_eq!(
+    fuzzer_utils::fuzzer_assert_eq!(
         chip.final_state.as_ref().unwrap().final_root,
         final_tree_check.root()
     );
@@ -374,7 +374,7 @@ fn expand_test_negative() {
         }
     }
 
-    assert!(test_cpu_engine()
+    fuzzer_utils::fuzzer_assert!(test_cpu_engine()
         .run_test(
             vec![Arc::new(chip.air), Arc::new(hash_test_chip.air())],
             vec![chip_ctx, hash_test_chip.generate_proving_ctx()],

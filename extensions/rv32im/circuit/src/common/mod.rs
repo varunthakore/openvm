@@ -140,7 +140,7 @@ mod aot {
         //
         //     for adapter_bits in (align_bits as u32 + 1..=size_bits).rev() {
         //         let adapter_idx = self.adapter_offset + adapter_bits as usize - 1;
-        //         debug_assert!(adapter_idx < trace_heights.len());
+        //         fuzzer_utils::fuzzer_assert!(adapter_idx < trace_heights.len());
         //         unsafe {
         //             *trace_heights.get_unchecked_mut(adapter_idx) +=
         //                 num << (size_bits - adapter_bits + 1);

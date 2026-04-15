@@ -114,7 +114,7 @@ fn set_and_execute<RA: Arena, E: PreflightExecutor<F, RA>>(
     );
     let initial_pc = tester.last_from_pc().as_canonical_u32();
     let rd_data = run_auipc(initial_pc, imm as u32);
-    assert_eq!(rd_data.map(F::from_u8), tester.read::<4>(1, a));
+    fuzzer_utils::fuzzer_assert_eq!(rd_data.map(F::from_u8), tester.read::<4>(1, a));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -318,7 +318,7 @@ fn run_auipc_sanity_test() {
     let imm = 11302451;
     let rd_data = run_auipc(initial_pc, imm);
 
-    assert_eq!(rd_data, [210, 107, 113, 186]);
+    fuzzer_utils::fuzzer_assert_eq!(rd_data, [210, 107, 113, 186]);
 }
 
 // ////////////////////////////////////////////////////////////////////////////////////

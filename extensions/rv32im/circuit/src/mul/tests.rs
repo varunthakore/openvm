@@ -147,7 +147,7 @@ fn set_and_execute<RA: Arena, E: PreflightExecutor<F, RA>>(
     tester.execute(executor, arena, &instruction);
 
     let (a, _) = run_mul::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(&b, &c);
-    assert_eq!(
+    fuzzer_utils::fuzzer_assert_eq!(
         a.map(F::from_u8),
         tester.read::<RV32_REGISTER_NUM_LIMBS>(1, rd)
     )
@@ -272,8 +272,8 @@ fn run_mul_sanity_test() {
     let c: [u32; RV32_REGISTER_NUM_LIMBS] = [39, 100, 126, 205];
     let (result, carry) = run_mul::<RV32_REGISTER_NUM_LIMBS, RV32_CELL_BITS>(&x, &y);
     for i in 0..RV32_REGISTER_NUM_LIMBS {
-        assert_eq!(z[i], result[i]);
-        assert_eq!(c[i], carry[i]);
+        fuzzer_utils::fuzzer_assert_eq!(z[i], result[i]);
+        fuzzer_utils::fuzzer_assert_eq!(c[i], carry[i]);
     }
 }
 
@@ -297,12 +297,12 @@ fn run_mul_program(instructions: Vec<Instruction<F>>) -> (VmState<F>, VmState<F>
         .execute(vec![], None)
         .expect("AOT execution must succeed");
 
-    assert_eq!(interp_state.pc(), aot_state.pc());
+    fuzzer_utils::fuzzer_assert_eq!(interp_state.pc(), aot_state.pc());
 
     let hasher = vm_poseidon2_hasher::<BabyBear>();
     let tree1 = MerkleTree::from_memory(&interp_state.memory.memory, &memory_dimensions, &hasher);
     let tree2 = MerkleTree::from_memory(&aot_state.memory.memory, &memory_dimensions, &hasher);
-    assert_eq!(tree1.root(), tree2.root(), "Memory states differ");
+    fuzzer_utils::fuzzer_assert_eq!(tree1.root(), tree2.root(), "Memory states differ");
 
     (interp_state, aot_state)
 }
@@ -355,8 +355,8 @@ fn test_aot_mul_basic() {
 
     let interp_x3 = read_register(&interp_state, 12);
     let aot_x3 = read_register(&aot_state, 12);
-    assert_eq!(interp_x3, 77);
-    assert_eq!(interp_x3, aot_x3);
+    fuzzer_utils::fuzzer_assert_eq!(interp_x3, 77);
+    fuzzer_utils::fuzzer_assert_eq!(interp_x3, aot_x3);
 }
 
 #[cfg(feature = "aot")]
@@ -373,8 +373,8 @@ fn test_aot_mul_upper_xmm() {
 
     let interp_x1 = read_register(&interp_state, 4);
     let aot_x1 = read_register(&aot_state, 4);
-    assert_eq!(interp_x1, 45);
-    assert_eq!(interp_x1, aot_x1);
+    fuzzer_utils::fuzzer_assert_eq!(interp_x1, 45);
+    fuzzer_utils::fuzzer_assert_eq!(interp_x1, aot_x1);
 }
 
 #[cfg(feature = "aot")]
@@ -416,11 +416,11 @@ fn test_aot_mul_randomized_pairs() {
     for (offset, expected_val) in expected {
         let interp_val = read_register(&interp_state, offset);
         let aot_val = read_register(&aot_state, offset);
-        assert_eq!(
+        fuzzer_utils::fuzzer_assert_eq!(
             interp_val, expected_val,
             "unexpected value at offset {offset}"
         );
-        assert_eq!(interp_val, aot_val, "AOT mismatch at offset {offset}");
+        fuzzer_utils::fuzzer_assert_eq!(interp_val, aot_val, "AOT mismatch at offset {offset}");
     }
 }
 
@@ -440,18 +440,18 @@ fn test_aot_mul_chained_dependencies() {
 
     let interp_x3 = read_register(&interp_state, 12);
     let aot_x3 = read_register(&aot_state, 12);
-    assert_eq!(interp_x3, 15);
-    assert_eq!(interp_x3, aot_x3);
+    fuzzer_utils::fuzzer_assert_eq!(interp_x3, 15);
+    fuzzer_utils::fuzzer_assert_eq!(interp_x3, aot_x3);
 
     let interp_x1 = read_register(&interp_state, 4);
     let aot_x1 = read_register(&aot_state, 4);
-    assert_eq!(interp_x1, 75);
-    assert_eq!(interp_x1, aot_x1);
+    fuzzer_utils::fuzzer_assert_eq!(interp_x1, 75);
+    fuzzer_utils::fuzzer_assert_eq!(interp_x1, aot_x1);
 
     let interp_x2 = read_register(&interp_state, 8);
     let aot_x2 = read_register(&aot_state, 8);
-    assert_eq!(interp_x2, 1125);
-    assert_eq!(interp_x2, aot_x2);
+    fuzzer_utils::fuzzer_assert_eq!(interp_x2, 1125);
+    fuzzer_utils::fuzzer_assert_eq!(interp_x2, aot_x2);
 }
 
 // ////////////////////////////////////////////////////////////////////////////////////

@@ -196,7 +196,7 @@ impl<A> Rv32JalrFiller<A> {
         bitwise_lookup_chip: SharedBitwiseOperationLookupChip<RV32_CELL_BITS>,
         range_checker_chip: SharedVariableRangeCheckerChip,
     ) -> Self {
-        assert!(range_checker_chip.range_max_bits() >= 16);
+        fuzzer_utils::fuzzer_assert!(range_checker_chip.range_max_bits() >= 16);
         Self {
             adapter,
             bitwise_lookup_chip,
@@ -234,7 +234,7 @@ where
     ) -> Result<(), ExecutionError> {
         let Instruction { opcode, c, g, .. } = *instruction;
 
-        debug_assert_eq!(
+        fuzzer_utils::fuzzer_assert_eq!(
             opcode.local_opcode_idx(Rv32JalrOpcode::CLASS_OFFSET),
             JALR as usize
         );
@@ -322,6 +322,6 @@ where
 #[inline(always)]
 pub(super) fn run_jalr(pc: u32, rs1: u32, imm: u16, imm_sign: bool) -> (u32, [u8; 4]) {
     let to_pc = rs1.wrapping_add(imm as u32 + (imm_sign as u32 * 0xffff0000));
-    assert!(to_pc < (1 << PC_BITS));
+    fuzzer_utils::fuzzer_assert!(to_pc < (1 << PC_BITS));
     (to_pc, pc.wrapping_add(DEFAULT_PC_STEP).to_le_bytes())
 }
