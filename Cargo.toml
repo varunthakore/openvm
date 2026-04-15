@@ -32,6 +32,7 @@ members = [
     "crates/recursion",
     "crates/verify",
     "crates/vm",
+    "crates/fuzzer_utils",
     "extensions/rv32im/circuit",
     "extensions/rv32im/transpiler",
     "extensions/rv32im/guest",
@@ -115,6 +116,9 @@ incremental = true
 lto = "thin"
 
 [workspace.dependencies]
+# Fuzzer utilities
+fuzzer_utils = { path = "crates/fuzzer_utils" }
+
 # Stark Backend
 openvm-stark-backend = { git = "https://github.com/openvm-org/stark-backend.git", branch = "develop-v2", default-features = false }
 openvm-codec-derive = { git = "https://github.com/openvm-org/stark-backend.git", branch = "develop-v2", default-features = false }

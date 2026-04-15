@@ -2546,6 +2546,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "fuzzer_utils"
+version = "1.0.0"
+dependencies = [
+ "lazy_static",
+ "openvm-instructions",
+ "openvm-rv32im-transpiler",
+ "openvm-stark-backend",
+ "rand 0.9.2",
+]
+
+[[package]]
 name = "generational-arena"
 version = "0.2.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4041,6 +4052,7 @@ dependencies = [
  "derive_more 1.0.0",
  "enum_dispatch",
  "eyre",
+ "fuzzer_utils",
  "getset",
  "itertools 0.14.0",
  "libc",
@@ -4778,6 +4790,7 @@ dependencies = [
  "derive-new 0.6.0",
  "derive_more 1.0.0",
  "eyre",
+ "fuzzer_utils",
  "num-bigint 0.4.6",
  "num-integer",
  "openvm-circuit",
