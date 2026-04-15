@@ -26,6 +26,8 @@ use openvm_stark_backend::{
 };
 use strum::IntoEnumIterator;
 
+use fuzzer_utils;
+
 #[repr(C)]
 #[derive(AlignedBorrow)]
 pub struct DivRemCoreCols<T, const NUM_LIMBS: usize, const LIMB_BITS: usize> {
@@ -380,12 +382,12 @@ impl<A, const NUM_LIMBS: usize, const LIMB_BITS: usize> DivRemFiller<A, NUM_LIMB
         // The RangeTupleChecker is used to range check (a[i], carry[i]) pairs where 0 <= i
         // < 2 * NUM_LIMBS. a[i] must have LIMB_BITS bits and carry[i] is the sum of i + 1
         // bytes (with LIMB_BITS bits). BitwiseOperationLookup is used to sign check bytes.
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             range_tuple_chip.sizes()[0] == 1 << LIMB_BITS,
             "First element of RangeTupleChecker must have size {}",
             1 << LIMB_BITS
         );
-        debug_assert!(
+        fuzzer_utils::fuzzer_assert!(
             range_tuple_chip.sizes()[1] >= (1 << LIMB_BITS) * 2 * NUM_LIMBS as u32,
             "Second element of RangeTupleChecker must have size of at least {}",
             (1 << LIMB_BITS) * 2 * NUM_LIMBS as u32
@@ -433,10 +435,29 @@ where
 
         core_record.local_opcode = opcode.local_opcode_idx(self.offset) as u8;
 
-        let is_signed = core_record.local_opcode == DivRemOpcode::DIV as u8
+        let mut is_signed = core_record.local_opcode == DivRemOpcode::DIV as u8
             || core_record.local_opcode == DivRemOpcode::REM as u8;
-        let is_div = core_record.local_opcode == DivRemOpcode::DIV as u8
+        let mut is_div = core_record.local_opcode == DivRemOpcode::DIV as u8
             || core_record.local_opcode == DivRemOpcode::DIVU as u8;
+
+        // <----------------------- START OF FAULT INJECTION ----------------------->
+        if fuzzer_utils::is_injection_at_step("DIVREM_FLIP_IS_SIGNED") {
+            let new_is_signed = !is_signed;
+            fuzzer_utils::print_injection_info(
+                "DIVREM_FLIP_IS_SIGNED",
+                &format!("{:?} => {:?}", is_signed, new_is_signed),
+            );
+            is_signed = new_is_signed;
+        }
+        if fuzzer_utils::is_injection_at_step("DIVREM_FLIP_IS_DIV") {
+            let new_is_div = !is_div;
+            fuzzer_utils::print_injection_info(
+                "DIVREM_FLIP_IS_DIV",
+                &format!("{:?} => {:?}", is_div, new_is_div),
+            );
+            is_div = new_is_div;
+        }
+        // <------------------------ END OF FAULT INJECTION ------------------------>
 
         [core_record.b, core_record.c] = self
             .adapter
@@ -650,11 +671,11 @@ pub(super) fn run_sltu_diff_idx<const NUM_LIMBS: usize>(
 ) -> usize {
     for i in (0..NUM_LIMBS).rev() {
         if x[i] != y[i] {
-            assert!((x[i] < y[i]) == cmp);
+            fuzzer_utils::fuzzer_assert!((x[i] < y[i]) == cmp);
             return i;
         }
     }
-    assert!(!cmp);
+    fuzzer_utils::fuzzer_assert!(!cmp);
     NUM_LIMBS
 }
 
@@ -725,7 +746,7 @@ fn biguint_to_limbs<const NUM_LIMBS: usize, const LIMB_BITS: usize>(
         *limb = rem.iter_u32_digits().next().unwrap_or(0);
         x = quot;
     }
-    debug_assert_eq!(x, BigUint::from(0u32));
+    fuzzer_utils::fuzzer_assert_eq!(x, BigUint::from(0u32));
     res
 }
 

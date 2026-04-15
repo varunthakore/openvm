@@ -27,6 +27,8 @@ use openvm_stark_backend::{
     BaseAirWithPublicValues,
 };
 
+use fuzzer_utils;
+
 use crate::adapters::{LoadStoreInstruction, Rv32LoadStoreAdapterFiller};
 
 /// LoadSignExtend Core Chip handles byte/halfword into word conversions through sign extend
@@ -243,11 +245,60 @@ where
         core_record.read_data = tmp.0 .1;
         core_record.shift_amount = tmp.1;
 
-        let write_data = run_write_data_sign_extend(
-            local_opcode,
+        // <----------------------- START OF FAULT INJECTION ----------------------->
+        let mut inject_shift = core_record.shift_amount;
+        let mut inject_opcode = local_opcode;
+
+        if fuzzer_utils::is_injection_at_step("LOAD_SIGN_EXTEND_SHIFT_MOD") {
+            let allowed_shifts: Vec<u8> = (0..=3).filter(|x| *x != inject_shift).collect();
+            let new_shift = fuzzer_utils::random_from_choices(allowed_shifts);
+            fuzzer_utils::print_injection_info(
+                "LOAD_SIGN_EXTEND_SHIFT_MOD",
+                &format!("{} => {}", inject_shift, new_shift),
+            );
+            inject_shift = new_shift;
+            // If LOADH and new shift is odd, convert to LOADB
+            if inject_opcode == LOADH && (inject_shift == 1 || inject_shift == 3) {
+                inject_opcode = LOADB;
+            }
+        }
+        // <------------------------ END OF FAULT INJECTION ------------------------>
+
+        let mut write_data = run_write_data_sign_extend(
+            inject_opcode,
             core_record.read_data,
-            core_record.shift_amount as usize,
+            inject_shift as usize,
         );
+
+        // <----------------------- START OF FAULT INJECTION ----------------------->
+        // Flip MSB or MSL in the resulting write_data
+        if fuzzer_utils::is_injection_at_step("LOAD_SIGN_EXTEND_MSB_FLIPPED") {
+            // Flip the sign extension: if extended with 0xFF, make 0x00 and vice versa
+            let ext_byte = if write_data[NUM_CELLS - 1] == 0xFF { 0u8 } else { 0xFFu8 };
+            for i in 1..NUM_CELLS {
+                if inject_opcode == LOADB || i >= NUM_CELLS / 2 {
+                    write_data[i] = ext_byte;
+                }
+            }
+            fuzzer_utils::print_injection_info(
+                "LOAD_SIGN_EXTEND_MSB_FLIPPED",
+                &format!("sign extension flipped to {:#x}", ext_byte),
+            );
+        }
+        if fuzzer_utils::is_injection_at_step("LOAD_SIGN_EXTEND_MSL_FLIPPED") {
+            // Flip MSB of the most significant data limb
+            let msl_idx = match inject_opcode {
+                LOADB => 0,
+                LOADH => NUM_CELLS / 2 - 1,
+                _ => 0,
+            };
+            write_data[msl_idx] ^= 1 << 7;
+            fuzzer_utils::print_injection_info(
+                "LOAD_SIGN_EXTEND_MSL_FLIPPED",
+                &format!("flipped MSB of limb {}", msl_idx),
+            );
+        }
+        // <------------------------ END OF FAULT INJECTION ------------------------>
 
         self.adapter.write(
             state.memory,

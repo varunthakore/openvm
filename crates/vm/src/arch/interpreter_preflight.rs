@@ -16,6 +16,10 @@ use crate::{
     system::memory::online::TracingMemory,
 };
 
+// <----------------------- START OF FAULT INJECTION ----------------------->
+use fuzzer_utils;
+// <------------------------ END OF FAULT INJECTION ------------------------>
+
 /// VM preflight executor (E3 executor) for use with trace generation.
 /// Note: This executor doesn't hold any VM state and can be used for multiple execution.
 pub struct PreflightInterpretedInstance<F, E> {
@@ -80,7 +84,7 @@ impl<F: Field, E> PreflightInterpretedInstance<F, E> {
                         },
                     )?
                 };
-                assert!(
+                fuzzer_utils::fuzzer_assert!(
                     (executor_idx as usize) < inventory.executors.len(),
                     "ExecutorInventory ensures executor_idx is in bounds"
                 );
@@ -176,18 +180,60 @@ impl<F: PrimeField32, E> PreflightInterpretedInstance<F, E> {
         };
         tracing::trace!("pc: {pc:#x} | {:?}", pc_entry.insn);
 
+        // <----------------------- START OF FAULT INJECTION ----------------------->
+
+        // Resolve opcode name for logging
         let opcode = pc_entry.insn.opcode;
         let c = pc_entry.insn.c;
+
+        let opcode_name = if opcode.as_usize() == SystemOpcode::CLASS_OFFSET + SystemOpcode::TERMINATE as usize {
+            "TERMINATE".to_string()
+        } else if opcode.as_usize() == SystemOpcode::CLASS_OFFSET + SystemOpcode::PHANTOM as usize {
+            "PHANTOM".to_string()
+        } else {
+            executor.get_opcode_name(opcode.as_usize())
+        };
+
+        // Prepare instruction reference — may be replaced with a mutated copy
+        let mut instruction = &pc_entry.insn;
+        let new_instruction;
+
+        // Update global hints for trace logging
+        let assembly_debug = format!("{:?}", instruction);
+        fuzzer_utils::update_hints(pc, &opcode_name, &assembly_debug);
+
+        // Check for INSTR_WORD_MOD injection at this step
+        if fuzzer_utils::is_injection_at_step("INSTR_WORD_MOD") {
+            new_instruction = fuzzer_utils::random_mutate_instruction(instruction);
+            fuzzer_utils::print_injection_info(
+                "INSTR_WORD_MOD",
+                &format!("{:?} => {:?}", instruction, new_instruction),
+            );
+            instruction = &new_instruction;
+
+            // Update hints with mutated instruction info
+            fuzzer_utils::update_hints(
+                pc,
+                &format!("MUTATED({})", opcode_name),
+                &format!("{:?}", instruction),
+            );
+        }
+
+        // <------------------------ END OF FAULT INJECTION ------------------------>
+
         // Handle termination instruction
         if opcode.as_usize() == SystemOpcode::CLASS_OFFSET + SystemOpcode::TERMINATE as usize {
             state.exit_code = Ok(Some(c.as_canonical_u32()));
+            // <--- FAULT INJECTION: trace + step --->
+            fuzzer_utils::print_trace_info();
+            fuzzer_utils::inc_step();
             return Ok(());
         }
 
         // Execute the instruction using the control implementation
         tracing::trace!(
             "opcode: {} | timestamp: {}",
-            executor.get_opcode_name(pc_entry.insn.opcode.as_usize()),
+            opcode_name,
             state.memory.timestamp()
         );
         let arena = unsafe {
@@ -200,7 +246,12 @@ impl<F: PrimeField32, E> PreflightInterpretedInstance<F, E> {
             state.ctx.arenas.get_unchecked_mut(air_idx)
         };
         let vm_state_mut = state.vm_state.into_mut(arena);
-        executor.execute(vm_state_mut, &pc_entry.insn)?;
+        executor.execute(vm_state_mut, instruction)?;
+
+        // <----------------------- START OF FAULT INJECTION ----------------------->
+        fuzzer_utils::print_trace_info();
+        fuzzer_utils::inc_step();
+        // <------------------------ END OF FAULT INJECTION ------------------------>
 
         #[cfg(feature = "metrics")]
         {

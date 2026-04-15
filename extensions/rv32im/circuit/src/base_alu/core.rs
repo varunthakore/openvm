@@ -24,6 +24,8 @@ use openvm_stark_backend::{
 };
 use strum::IntoEnumIterator;
 
+use fuzzer_utils;
+
 #[repr(C)]
 #[derive(AlignedBorrow, Debug)]
 pub struct BaseAluCoreCols<T, const NUM_LIMBS: usize, const LIMB_BITS: usize> {
@@ -224,7 +226,20 @@ where
             .read(state.memory, instruction, &mut adapter_record)
             .into();
 
-        let rd = run_alu::<NUM_LIMBS, LIMB_BITS>(local_opcode, &core_record.b, &core_record.c);
+        let mut rd = run_alu::<NUM_LIMBS, LIMB_BITS>(local_opcode, &core_record.b, &core_record.c);
+
+        // <----------------------- START OF FAULT INJECTION ----------------------->
+        if fuzzer_utils::is_injection_at_step("BASE_ALU_RANDOM_OUTPUT") {
+            let rd_u32: [u32; NUM_LIMBS] = rd.map(u32::from);
+            let new_rd_u32 = fuzzer_utils::random_mod_of_u32_array::<NUM_LIMBS>(&rd_u32);
+            let new_rd: [u8; NUM_LIMBS] = new_rd_u32.map(|x| x as u8);
+            fuzzer_utils::print_injection_info(
+                "BASE_ALU_RANDOM_OUTPUT",
+                &format!("{:?} => {:?}", rd, new_rd),
+            );
+            rd = new_rd;
+        }
+        // <------------------------ END OF FAULT INJECTION ------------------------>
 
         core_record.local_opcode = local_opcode as u8;
 
@@ -294,7 +309,7 @@ pub(super) fn run_alu<const NUM_LIMBS: usize, const LIMB_BITS: usize>(
     x: &[u8; NUM_LIMBS],
     y: &[u8; NUM_LIMBS],
 ) -> [u8; NUM_LIMBS] {
-    debug_assert!(LIMB_BITS <= 8, "specialize for bytes");
+    fuzzer_utils::fuzzer_assert!(LIMB_BITS <= 8, "specialize for bytes");
     match opcode {
         BaseAluOpcode::ADD => run_add::<NUM_LIMBS, LIMB_BITS>(x, y),
         BaseAluOpcode::SUB => run_subtract::<NUM_LIMBS, LIMB_BITS>(x, y),

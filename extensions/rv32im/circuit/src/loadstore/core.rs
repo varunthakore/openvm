@@ -20,6 +20,8 @@ use openvm_stark_backend::{
     BaseAirWithPublicValues,
 };
 
+use fuzzer_utils;
+
 use crate::adapters::{LoadStoreInstruction, Rv32LoadStoreAdapterFiller};
 
 #[derive(Debug, Clone, Copy)]
@@ -300,19 +302,74 @@ where
             .adapter
             .read(state.memory, instruction, &mut adapter_record);
 
-        let local_opcode = Rv32LoadStoreOpcode::from_usize(opcode.local_opcode_idx(self.offset));
+        let mut local_opcode = Rv32LoadStoreOpcode::from_usize(opcode.local_opcode_idx(self.offset));
         core_record.local_opcode = local_opcode as u8;
 
-        let write_data = run_write_data(
+        // <----------------------- START OF FAULT INJECTION ----------------------->
+        let mut shift = core_record.shift_amount;
+
+        if fuzzer_utils::is_injection_at_step("LOADSTORE_SHIFT_MOD") {
+            let allowed_shifts: Vec<u8> = (0..=3).filter(|x| *x != shift).collect();
+            let new_shift = fuzzer_utils::random_from_choices(allowed_shifts);
+            fuzzer_utils::print_injection_info(
+                "LOADSTORE_SHIFT_MOD",
+                &format!("{} => {}", shift, new_shift),
+            );
+            shift = new_shift;
+        }
+
+        if fuzzer_utils::is_injection_at_step("LOADSTORE_OPCODE_MOD") {
+            use Rv32LoadStoreOpcode::*;
+            let allowed: Vec<Rv32LoadStoreOpcode> = vec![LOADW, LOADBU, LOADHU, STOREW, STOREH, STOREB]
+                .into_iter()
+                .filter(|x| *x != local_opcode)
+                .collect();
+            let new_opcode = fuzzer_utils::random_from_choices(allowed);
+            fuzzer_utils::print_injection_info(
+                "LOADSTORE_OPCODE_MOD",
+                &format!("{:?} => {:?}", local_opcode, new_opcode),
+            );
+            local_opcode = new_opcode;
+        }
+        // <------------------------ END OF FAULT INJECTION ------------------------>
+
+        let mut write_data = run_write_data(
             local_opcode,
             core_record.read_data,
             core_record.prev_data,
-            core_record.shift_amount as usize,
+            shift as usize,
         );
+
+        // <----------------------- START OF FAULT INJECTION ----------------------->
+        if fuzzer_utils::is_injection_at_step("LOADSTORE_SKIP_WRITE") {
+            let new_write_data = if fuzzer_utils::random_bool() {
+                core_record.prev_data
+            } else {
+                core_record.read_data.map(u32::from)
+            };
+            fuzzer_utils::print_injection_info(
+                "LOADSTORE_SKIP_WRITE",
+                &format!("{:?} => {:?}", write_data, new_write_data),
+            );
+            write_data = new_write_data;
+        }
+        // <------------------------ END OF FAULT INJECTION ------------------------>
+
         self.adapter
             .write(state.memory, instruction, write_data, &mut adapter_record);
 
         *state.pc = state.pc.wrapping_add(DEFAULT_PC_STEP);
+
+        // <----------------------- START OF FAULT INJECTION ----------------------->
+        if fuzzer_utils::is_injection_at_step("LOADSTORE_PC_MOD") {
+            let new_pc = *state.pc + DEFAULT_PC_STEP; // skip next instruction
+            fuzzer_utils::print_injection_info(
+                "LOADSTORE_PC_MOD",
+                &format!("{} => {}", *state.pc, new_pc),
+            );
+            *state.pc = new_pc;
+        }
+        // <------------------------ END OF FAULT INJECTION ------------------------>
 
         Ok(())
     }

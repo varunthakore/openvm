@@ -25,6 +25,8 @@ use openvm_stark_backend::{
     BaseAirWithPublicValues,
 };
 
+use fuzzer_utils;
+
 use crate::adapters::{
     Rv32RdWriteAdapterExecutor, Rv32RdWriteAdapterFiller, RV32_CELL_BITS, RV32_REGISTER_NUM_LIMBS,
 };
@@ -134,7 +136,7 @@ where
             need_range_check.push(limb.into());
         }
 
-        assert_eq!(pc_limbs.len(), RV32_REGISTER_NUM_LIMBS);
+        fuzzer_utils::fuzzer_assert_eq!(pc_limbs.len(), RV32_REGISTER_NUM_LIMBS);
         // use enumerate to match pc_limbs[0] => i = 0, pc_limbs[1] => i = 1, ...
         // pc_limbs[0] is already range checked through rd_data[0], so we skip it
         for (i, limb) in pc_limbs.iter().enumerate().skip(1) {
@@ -154,7 +156,7 @@ where
         // need_range_check contains (RV32_REGISTER_NUM_LIMBS - 1) elements from imm_limbs
         // and (RV32_REGISTER_NUM_LIMBS - 1) elements from pc_limbs
         // Hence, is of even length 2*RV32_REGISTER_NUM_LIMBS - 2
-        assert_eq!(need_range_check.len() % 2, 0);
+        fuzzer_utils::fuzzer_assert_eq!(need_range_check.len() % 2, 0);
         for pair in need_range_check.chunks_exact(2) {
             self.bus
                 .send_range(pair[0].clone(), pair[1].clone())
@@ -230,7 +232,41 @@ where
         core_record.from_pc = *state.pc;
         core_record.imm = instruction.c.as_canonical_u32();
 
-        let rd = run_auipc(*state.pc, core_record.imm);
+        // <----------------------- START OF FAULT INJECTION ----------------------->
+        let mut inject_pc = *state.pc;
+        let mut inject_imm = core_record.imm;
+
+        if fuzzer_utils::is_injection_at_step("AUIPC_PC_LIMBS_MODIFICATION") {
+            let pc_bytes = inject_pc.to_le_bytes();
+            let new_pc_bytes = fuzzer_utils::random_mod_of_u32_array::<4>(
+                &[pc_bytes[0] as u32, pc_bytes[1] as u32, pc_bytes[2] as u32, pc_bytes[3] as u32],
+            );
+            inject_pc = u32::from_le_bytes([
+                new_pc_bytes[0] as u8, new_pc_bytes[1] as u8,
+                new_pc_bytes[2] as u8, new_pc_bytes[3] as u8,
+            ]);
+            fuzzer_utils::print_injection_info(
+                "AUIPC_PC_LIMBS_MODIFICATION",
+                &format!("{} => {}", *state.pc, inject_pc),
+            );
+        }
+        if fuzzer_utils::is_injection_at_step("AUIPC_IMM_LIMBS_MODIFICATION") {
+            let imm_bytes = inject_imm.to_le_bytes();
+            let new_imm_bytes = fuzzer_utils::random_mod_of_u32_array::<3>(
+                &[imm_bytes[0] as u32, imm_bytes[1] as u32, imm_bytes[2] as u32],
+            );
+            inject_imm = u32::from_le_bytes([
+                new_imm_bytes[0] as u8, new_imm_bytes[1] as u8,
+                new_imm_bytes[2] as u8, 0,
+            ]);
+            fuzzer_utils::print_injection_info(
+                "AUIPC_IMM_LIMBS_MODIFICATION",
+                &format!("{} => {}", core_record.imm, inject_imm),
+            );
+        }
+        // <------------------------ END OF FAULT INJECTION ------------------------>
+
+        let rd = run_auipc(inject_pc, inject_imm);
 
         self.adapter
             .write(state.memory, instruction, rd, &mut adapter_record);
@@ -260,7 +296,7 @@ where
         let imm_limbs = record.imm.to_le_bytes();
         let pc_limbs = record.from_pc.to_le_bytes();
         let rd_data = run_auipc(record.from_pc, record.imm);
-        debug_assert_eq!(imm_limbs[3], 0);
+        fuzzer_utils::fuzzer_assert_eq!(imm_limbs[3], 0);
 
         // range checks:
         // hardcoding for performance: first 3 limbs of imm_limbs, last 3 limbs of pc_limbs where
