@@ -140,11 +140,11 @@ lazy_static! {
 }
 
 pub fn is_trace_logging() -> bool {
-    GLOBAL_STATE.lock().unwrap().trace_logging
+    GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner()).trace_logging
 }
 
 pub fn set_trace_logging(value: bool) {
-    let mut state = GLOBAL_STATE.lock().unwrap();
+    let mut state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
     state.trace_logging = value;
 }
 
@@ -157,11 +157,11 @@ pub fn disable_trace_logging() {
 }
 
 pub fn is_injection() -> bool {
-    GLOBAL_STATE.lock().unwrap().injection
+    GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner()).injection
 }
 
 pub fn set_injection(value: bool) {
-    let mut state = GLOBAL_STATE.lock().unwrap();
+    let mut state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
     state.injection = value;
 }
 
@@ -174,11 +174,11 @@ pub fn disable_injection() {
 }
 
 pub fn is_assertions() -> bool {
-    GLOBAL_STATE.lock().unwrap().assertions
+    GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner()).assertions
 }
 
 pub fn set_assertions(value: bool) {
-    let mut state = GLOBAL_STATE.lock().unwrap();
+    let mut state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
     state.assertions = value;
 }
 
@@ -191,30 +191,30 @@ pub fn disable_assertions() {
 }
 
 pub fn set_seed(value: u64) {
-    let mut state = GLOBAL_STATE.lock().unwrap();
+    let mut state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
     state.rng = StdRng::seed_from_u64(value);
     state.seed = value;
 }
 
 pub fn get_seed() -> u64 {
-    GLOBAL_STATE.lock().unwrap().seed
+    GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner()).seed
 }
 
 pub fn is_injection_kind(value: &str) -> bool {
-    GLOBAL_STATE.lock().unwrap().injection_kind == value
+    GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner()).injection_kind == value
 }
 
 pub fn set_injection_kind(value: String) {
-    let mut state = GLOBAL_STATE.lock().unwrap();
+    let mut state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
     state.injection_kind = value.clone();
 }
 
 pub fn get_injection_kind() -> String {
-    GLOBAL_STATE.lock().unwrap().injection_kind.clone()
+    GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner()).injection_kind.clone()
 }
 
 pub fn inc_step() {
-    let mut state = GLOBAL_STATE.lock().unwrap();
+    let mut state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
     state.step += 1;
 
     if state.step > 1000000 {
@@ -223,7 +223,23 @@ pub fn inc_step() {
 }
 
 pub fn get_step() -> u64 {
-    GLOBAL_STATE.lock().unwrap().step
+    GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner()).step
+}
+
+/// Reset the instruction step counter to 0.
+///
+/// The `step` counter is advanced monotonically by `inc_step()` (called
+/// once per instruction during preflight execution). Because it is
+/// process-global, it accumulates across runs. Without this reset,
+/// `is_injection_at_step` would never fire on the second or subsequent
+/// calls to `sdk.prove()` because `step` would already exceed any
+/// realistic `injection_step`.
+///
+/// The orchestrator (e.g. arguzz-plus) should call this before each
+/// baseline execution and before each injection run.
+pub fn reset_step() {
+    let mut state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
+    state.step = 0;
 }
 
 /// Reset the fault counter to 0. Call this before each run so the next
@@ -232,7 +248,7 @@ pub fn get_step() -> u64 {
 /// The counter itself is incremented inside `print_injection_info` (not
 /// via a separate function) to avoid double-locking the global mutex.
 pub fn reset_fault_count() {
-    let mut state = GLOBAL_STATE.lock().unwrap();
+    let mut state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
     state.fault_count = 0;
 }
 
@@ -241,57 +257,57 @@ pub fn reset_fault_count() {
 /// actually happened (expected value: 1 for a successful injection run,
 /// 0 if the target step was never reached).
 pub fn get_fault_count() -> u64 {
-    GLOBAL_STATE.lock().unwrap().fault_count
+    GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner()).fault_count
 }
 
 pub fn get_injection_step() -> u64 {
-    GLOBAL_STATE.lock().unwrap().injection_step
+    GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner()).injection_step
 }
 
 pub fn set_injection_step(value: u64) {
-    let mut state = GLOBAL_STATE.lock().unwrap();
+    let mut state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
     state.injection_step = value;
 }
 
 pub fn is_injection_at_step(kind: &str) -> bool {
-    let state = GLOBAL_STATE.lock().unwrap();
+    let state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
     state.injection &&
         state.step == state.injection_step &&
         state.injection_kind == kind
 }
 
 pub fn set_hint_instruction(value: &String) {
-    let mut state = GLOBAL_STATE.lock().unwrap();
+    let mut state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
     state.hint_instruction = value.clone();
 }
 
 pub fn get_hint_instruction() -> String {
-    let state = GLOBAL_STATE.lock().unwrap();
+    let state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
     state.hint_instruction.clone()
 }
 
 pub fn set_hint_assembly(value: &String) {
-    let mut state = GLOBAL_STATE.lock().unwrap();
+    let mut state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
     state.hint_assembly = value.clone();
 }
 
 pub fn get_hint_assembly() -> String {
-    let state = GLOBAL_STATE.lock().unwrap();
+    let state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
     state.hint_assembly.clone()
 }
 
 pub fn set_hint_pc(value: u32) {
-    let mut state = GLOBAL_STATE.lock().unwrap();
+    let mut state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
     state.hint_pc = value;
 }
 
 pub fn get_hint_pc() -> u32 {
-    let state = GLOBAL_STATE.lock().unwrap();
+    let state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
     state.hint_pc
 }
 
 pub fn update_hints(pc: u32, instruction: &String, assembly: &String) {
-    let mut state = GLOBAL_STATE.lock().unwrap();
+    let mut state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
     state.hint_pc = pc;
     state.hint_instruction = instruction.clone();
     state.hint_assembly = assembly.clone();
@@ -413,7 +429,7 @@ pub fn print_injection_info(
     inject_kind: &str,
     info: &String,
 ) {
-    let mut state = GLOBAL_STATE.lock().unwrap();
+    let mut state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
 
     // Always count the fault — the orchestrator uses this to verify
     // injection actually happened (expected: exactly 1 per run).
@@ -443,7 +459,7 @@ pub fn print_injection_info(
 }
 
 pub fn print_trace_info() {
-    let state = GLOBAL_STATE.lock().unwrap();
+    let state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
     if state.trace_logging {
         println!(
             "<trace>{{\
@@ -466,14 +482,14 @@ pub fn print_trace_info() {
 /////////
 
 pub fn random_bool() -> bool {
-    let mut state = GLOBAL_STATE.lock().unwrap();
+    let mut state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
     state.rng.random::<bool>()
 }
 
 pub fn random_from_choices<T>(choices: Vec<T>) -> T
     where T : Clone
 {
-    let mut state = GLOBAL_STATE.lock().unwrap();
+    let mut state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
     choices.choose(&mut state.rng).unwrap().clone()
 }
 
@@ -606,7 +622,7 @@ fn internal_random_mod_of_u32(element: u32, rng: &mut StdRng) -> u32 {
 /// (4-limb register representation) where corrupting a subset of limbs
 /// tests how many limbs the constraint system correctly binds.
 pub fn random_mod_of_u32_array<const LEN: usize>(elements: &[u32; LEN]) -> [u32; LEN] {
-    let mut state = GLOBAL_STATE.lock().unwrap();
+    let mut state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
 
     let mut new_elements = *elements;
     let mut indices: Vec<usize> = (0..LEN).collect();
@@ -682,7 +698,7 @@ pub fn random_mutate_field_element<F: Field + PrimeField32>(element: F, rng: &mu
 /// instruction is replaced with the output of this function before being
 /// dispatched to the chip executor.
 pub fn random_mutate_instruction<F: Field + PrimeField32>(instruction: &Instruction<F>) -> Instruction<F> {
-    let mut state = GLOBAL_STATE.lock().unwrap();
+    let mut state = GLOBAL_STATE.lock().unwrap_or_else(|p| p.into_inner());
 
     // Start from a copy of the original instruction; mutations are applied in place.
     let mut new_instruction = instruction.clone();
