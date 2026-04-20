@@ -186,6 +186,30 @@ impl<F: PrimeField32, E> PreflightInterpretedInstance<F, E> {
         let opcode = pc_entry.insn.opcode;
         let c = pc_entry.insn.c;
 
+        // Detect OpenVM system opcodes (TERMINATE, PHANTOM). These are NOT
+        // RISC-V opcodes — they're OpenVM-specific toolchain artifacts whose
+        // semantics are implemented inside this preflight loop itself (the
+        // TERMINATE early-return below, the host-side PHANTOM sub-instructions)
+        // rather than inside a chip AIR. INSTR_WORD_MOD is designed to corrupt
+        // instruction operands and test whether the chip's program-bus lookup
+        // catches the deviation — but system opcodes don't take that path, so
+        // the mutation is short-circuited before any chip trace row records it.
+        //
+        // If we fired the hook anyway, `fault_count` would increment without
+        // any actual corruption reaching the constraint system, producing
+        // false-positive "soundness bug" findings. See
+        // `arguzz-plus/src/adapters/openvm.rs` tests
+        // `reproduce_domply_pair0` / `reproduce_domply_pair2` for the
+        // empirical evidence.
+        //
+        // Bugs specific to TERMINATE / PHANTOM (exit-code constraints, PC
+        // update after PHANTOM, etc.) need dedicated injection kinds like
+        // `TERMINATE_EXIT_CODE_MOD` or `PHANTOM_PC_MOD` — not INSTR_WORD_MOD.
+        let is_system_opcode = opcode.as_usize()
+            == SystemOpcode::CLASS_OFFSET + SystemOpcode::TERMINATE as usize
+            || opcode.as_usize()
+                == SystemOpcode::CLASS_OFFSET + SystemOpcode::PHANTOM as usize;
+
         let opcode_name = if opcode.as_usize() == SystemOpcode::CLASS_OFFSET + SystemOpcode::TERMINATE as usize {
             "TERMINATE".to_string()
         } else if opcode.as_usize() == SystemOpcode::CLASS_OFFSET + SystemOpcode::PHANTOM as usize {
@@ -202,8 +226,11 @@ impl<F: PrimeField32, E> PreflightInterpretedInstance<F, E> {
         let assembly_debug = format!("{:?}", instruction);
         fuzzer_utils::update_hints(pc, &opcode_name, &assembly_debug);
 
-        // Check for INSTR_WORD_MOD injection at this step
-        if fuzzer_utils::is_injection_at_step("INSTR_WORD_MOD") {
+        // Check for INSTR_WORD_MOD injection at this step. Skipped on system
+        // opcodes (see comment above) so `fault_count` stays at 0 in that
+        // case and the orchestrator classifies the attempt as
+        // `INJECTION_NO_FAULT`.
+        if !is_system_opcode && fuzzer_utils::is_injection_at_step("INSTR_WORD_MOD") {
             new_instruction = fuzzer_utils::random_mutate_instruction(instruction);
             fuzzer_utils::print_injection_info(
                 "INSTR_WORD_MOD",
